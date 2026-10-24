@@ -13,8 +13,8 @@ export default function Login() {
                         <input id="username" name="username"/>
                     </div>
                     <div className={styles.inputLabel}>
-                        <label htmlFor="username">Password</label>
-                        <input id="username" name="username" type="password"/>
+                        <label htmlFor="password">Password</label>
+                        <input id="password" name="password" type="password"/>
                     </div>
                 </div>
                 <div className={styles.btnContainer}>

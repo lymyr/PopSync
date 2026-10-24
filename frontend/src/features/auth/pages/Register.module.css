@@ -1,0 +1,19 @@
+.title {
+    composes: title from "./Login.module.css"
+}
+
+.container {
+    composes: container from "./Login.module.css"
+}
+
+.formContainer {
+    composes: formContainer from "./Login.module.css"
+}
+
+.inputLabel {
+    composes: inputLabel from "./Login.module.css"
+}
+
+.button {
+    composes: button from "./Login.module.css"
+}
