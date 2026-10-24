@@ -1,0 +1,68 @@
+.title {
+    font-weight: 700;
+    font-size: 2rem;
+    text-align: center;
+}
+
+.inputLabel {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.formContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.button {
+    background-color: var(--secondary-color);
+    border: none;
+    padding: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 1.25rem;
+    border-radius: 4px;
+    color: var(--bg-color);
+
+    will-change: background-color;
+    transition: background-color 200ms ease-out;
+}
+
+.button:hover {
+    background-color: var(--font-color);
+}
+
+.btnContainer {
+    display: flex;
+    gap: 8px;
+}
+
+.btnContainer > button:first-child {
+    background-color: rgb(42, 42, 42);
+    padding-inline: 12px;
+    border-radius: 4px;
+    color: var(--font-color);
+    border: none;
+    font-size: 0.8rem;
+    letter-spacing: 8%;
+    cursor: pointer;
+
+    will-change: background-color;
+    transition: background-color 200ms ease-out;
+}
+
+.btnContainer > button:first-child:hover {
+    background-color: rgb(62, 62, 62);
+}
+
+.btnContainer > button:last-child {
+    width: 100%;
+}

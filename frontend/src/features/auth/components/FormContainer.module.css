@@ -1,0 +1,32 @@
+.container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 100vh;
+}
+
+.container > div:first-child {
+    background-color: var(--bg-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.container > div:last-child {
+    display: flex;
+    justify-content: center;
+    background-color: var(--secondary-color-dark);
+    margin: 16px;
+    margin-left: 0px;
+    border-radius: 8px;
+}
+
+
+@media screen and (min-width: 900px) {
+    .container > div:last-child p {
+        font-size: 4rem;
+    }
+
+    .container > div:last-child img {
+        max-width: 80px;
+    }
+}

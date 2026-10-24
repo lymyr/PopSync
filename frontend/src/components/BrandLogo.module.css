@@ -1,0 +1,22 @@
+.container {
+    display: flex;
+    align-items: center;
+    width: fit-content;
+    gap: 2px;
+}
+
+.container img {
+    max-width: 50px;
+}
+
+.container p {
+    font-size: 3rem;
+    font-family: "Lexend Deca", Arial, Helvetica, sans-serif;
+    font-weight: 900;
+    letter-spacing: -8%;
+    color: var(--main-color)
+}
+
+.container span {
+    color: var(--secondary-color)
+}
