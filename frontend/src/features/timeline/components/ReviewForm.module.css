@@ -5,7 +5,7 @@
     display: flex;
     gap: 8px;
     flex-direction: column;
-    padding: 16px;
+    padding: var(--content-padding);
 }
 
 .postContainer {

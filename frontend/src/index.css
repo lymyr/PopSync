@@ -56,15 +56,18 @@ h1, h2, h3, h4, h5, h6 {
 
 :root {
   --font-color: rgb(240, 240, 240);
+  --font-color-darker: rgb(187, 187, 187);
   --bg-color: rgb(17, 17, 17);
   --main-color: #e2bee8;
   --main-color-light: #f5d6f9;
   --main-color-dark: rgb(41, 25, 42);
   --secondary-color: rgb(42, 42, 42);
   --secondary-color-light: rgb(62, 62, 62);
+  
   --max-width: 1920px;
   --inline-space: 24px;
   --radius: 8px;
+  --content-padding: 16px;
 
   background-color: black;
   color: var(--font-color);

@@ -1,5 +1,8 @@
 .container main {
-    padding: var(--inline-space)
+    padding: var(--inline-space);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
 @media screen and (min-width: 1000px) {

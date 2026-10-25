@@ -1,0 +1,113 @@
+.container {
+    background-color: var(--bg-color);
+    border-radius: var(--radius);
+    padding: var(--content-padding);
+}
+
+.authorContainer {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.authorContainer img {
+    --size: 44px;
+    min-width: var(--size);
+    width: var(--size);
+    height: var(--size);
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.authorContainer > div > p:first-child {
+    font-weight: 600;
+}
+
+.authorContainer > div > p:last-child {
+    font-size: 0.75rem;
+    color: var(--font-color-darker)
+}
+
+.ratingContainer {
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1.15rem;
+}
+
+.rating {
+    font-size: 1.4rem;
+    letter-spacing: -10%;
+    font-weight: 800;
+    text-wrap: nowrap;
+    padding: 2px 8px;
+    border-radius: 4px;
+
+    background-color: rgb(96, 65, 96);
+} 
+
+.contentContainer {
+    margin-bottom: 16px;
+}
+
+.posterContainer {
+    display: flex;
+    position: relative;
+    margin: auto;
+    width: fit-content;
+    max-height: 600px;
+    
+}
+
+.posterContainer > img {
+    object-fit: contain;
+    border-radius: 4px;
+
+}
+
+.posterContainer > div {
+    position: absolute;
+    background-color:rgba(0, 0, 0, 0.75);
+    width: 100%;
+    padding: 12px;
+
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+
+.interactionContainer {
+    --space: calc(24px / 2);
+    border-top: 1px solid var(--secondary-color);
+    padding-top: var(--space);
+    margin-top: var(--space);
+
+    display: flex;
+    gap: 16px;
+}
+
+.interactionContainer > button {
+    display: flex;
+    align-items: center;
+    padding: 2px 8px;
+    gap: 8px;
+
+    background-color: transparent;
+}
+
+.interactionContainer svg {
+    stroke: white;
+    stroke-width: 1.5px;
+    width: 24px;
+}
+
+.liked {
+    font-weight: 600;
+    color: var(--main-color)
+}
+
+.liked svg {
+    fill: var(--main-color);
+    stroke: var(--main-color);
+}
