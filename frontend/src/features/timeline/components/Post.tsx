@@ -27,7 +27,7 @@ export default function Post() {
                 <p>
                     {
                         !showAll && content.length > 80 ? 
-                            content.split("").slice(0, 70).join("") + "..." 
+                            content.split("").slice(0, 70).join("") + "... " 
                         : 
                             content
                     } 

@@ -25,19 +25,18 @@
 
 .authorContainer > div > p:last-child {
     font-size: 0.75rem;
-    color: var(--font-color-darker)
+    color: var(--font-color-dark)
 }
 
 .ratingContainer {
-    padding: 16px;
+    padding-block: 16px;
     display: flex;
     align-items: center;
     gap: 12px;
-    font-size: 1.15rem;
 }
 
 .rating {
-    font-size: 1.4rem;
+    font-size: 1.15rem;
     letter-spacing: -10%;
     font-weight: 800;
     text-wrap: nowrap;
@@ -49,6 +48,13 @@
 
 .contentContainer {
     margin-bottom: 16px;
+}
+
+.contentContainer button {
+    background-color: transparent;
+    padding: 0;
+    width: fit-content;
+    color: var(--main-color)
 }
 
 .posterContainer {

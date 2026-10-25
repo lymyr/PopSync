@@ -9,20 +9,21 @@ export default function ReviewForm() {
 
     return (
         <form className={styles.container}>
-            {/* todo: add dropdown for search based off user watch list */}
-            <div className={styles.searchContainer}>
-                <input placeholder="Watch List Search" />
-            </div>
-            {/* todo: should only show once media is selected from search */}
-            <div className={styles.selectedMediaContainer}>
-                <p>Show/Movie asdna slkdnaslkdnaslkd nalksdnad alskd naslkd nasdksa  Title</p>
-                <button type="button">X</button>
-            </div>
             <div className={styles.postContainer}>
                 <img 
                     alt="your profile picture" 
                     src="/defaultPfp.webp"
                 />
+                <div>
+                {/* todo: add dropdown for search based off user watch list */}
+                <div className={styles.searchContainer}>
+                    <input placeholder="Watch List Search" />
+                </div>
+                {/* todo: should only show once media is selected from search */}
+                <div className={styles.selectedMediaContainer}>
+                    <button type="button">X</button>
+                    <p>Show/Movie asdna slkdnaslkdnaslkd nalksdnad alskd naslkd nasdksa  Title</p>
+                </div>
                 <textarea 
                     placeholder="What are your thoughts?"
                     wrap="soft"
@@ -31,6 +32,7 @@ export default function ReviewForm() {
                         setContent(e.target.value.split(`\n`))
                     }}
                 />
+            </div>
             </div>
             <button>Post</button>
         </form>
