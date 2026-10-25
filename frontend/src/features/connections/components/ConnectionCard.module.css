@@ -1,0 +1,54 @@
+.container {
+    padding: 24px 4px;
+
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.container > div {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex-grow: 1;
+}
+
+.container img {
+    --size: 60px;
+    min-width: var(--size);
+    width: var(--size);
+    height: var(--size);
+    border-radius: 50%;
+}
+
+.container > div p:first-child {
+    font-weight: 600;
+}
+
+.container > div p:nth-child(2) {
+    font-size: 0.85rem;
+    color: var(--font-color-dark);
+}
+
+.btnContainer {
+    display: flex;
+
+    gap: 8px;
+    justify-content: start;
+    height: fit-content;
+}
+
+.btnContainer button {
+    width: 100%;
+    padding: 4px 12px;
+    max-width: 240px;
+}
+
+.btnContainer button:nth-child(2) {
+    background-color: var(--main-color);
+    font-weight: 600;
+    color: var(--bg-color);
+}
+.btnContainer button:nth-child(2):hover {
+    background-color: var(--main-color-light);
+}
