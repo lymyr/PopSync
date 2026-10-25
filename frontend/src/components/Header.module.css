@@ -1,0 +1,197 @@
+.parent {
+    position: sticky;
+    top: 0;
+    box-shadow: 0px 4px 12px black;
+    background-color: var(--bg-color);
+    --icon-size: 24px;
+}
+
+.container {
+    max-width: var(--max-width);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 8px;
+    
+    padding-inline: var(--inline-space);
+}
+
+.container > div:first-child img {
+    max-width: 32px;
+}
+.container > div:first-child p {
+    font-size: 2rem;
+}
+
+.container > div:first-child {
+    padding-top: 16px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.container > div:first-child input {
+    padding: 2px 8px;
+    border-radius: 24px;
+    height: fit-content;
+    width: 100%;
+}
+
+.container li,
+.container ul {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+}
+.container ul {
+    display: flex;
+    align-items: center;
+}
+
+.container li {
+    cursor: pointer;
+    width: 80px;
+    padding-block: 16px;
+}
+
+.container li p {
+    display: none;
+}
+
+.container svg {
+    fill: var(--font-color);
+    width: var(--icon-size);
+        
+    margin: auto;
+}
+
+.container li:not(.selected):hover {
+    background-color: var(--secondary-color);
+    border-radius: 12px;
+}
+
+.container .selected {
+    border-bottom: 1px solid var(--main-color)
+}
+
+.selected svg {
+    fill: var(--main-color);
+}
+
+
+.profile img {
+    --size: var(--icon-size);
+    text-align: center;
+    font-size: 0.75rem;
+    border-radius: 50%;
+    margin: auto;
+    width: var(--size);
+    height: var(--size);
+    object-fit: cover;
+
+    
+}
+
+@media screen and (max-width: 500px) {
+    .container > div:first-child p {
+        display: none;
+    }
+}
+
+/* remember to sync with PageContainer.module.css */
+@media screen and (min-width: 1000px) {
+    .parent {
+        position: static;
+        box-shadow: none;
+        background-color: var(--bg-color);
+        --icon-size: 24px;
+        min-height: 100vh;
+        position: relative;
+
+        --spacing-inline: 24px;
+    }
+
+    .container {
+        position: sticky;
+        top: 0;
+
+        align-items: start;
+        justify-content: start;
+        flex-direction: column;
+
+        padding: 32px 0px;
+        gap: 32px;
+    }
+
+    .container > div:first-child {
+        padding-top: 0px;
+        gap: 24px;
+
+        flex-direction: column;
+        width: 100%;
+
+        padding-inline: var(--spacing-inline);
+    }
+
+    .container > div:first-child img {
+        max-width: 48px;
+    }
+    .container > div:first-child p {
+        display: block;
+    }
+    
+    .container > div:first-child > div:first-child {
+        margin: auto;
+    }
+
+    .container > div:first-child > div:first-child p {
+        font-size: 3rem;
+    }
+
+    .container > div:first-child input {
+        padding: 8px;
+    }
+
+
+    .container nav {
+        width: 100%;
+    }
+
+    .container ul {
+        align-items: start;
+        flex-direction: column;
+    }
+
+    .container li {
+        width: 100%;
+        display: flex;
+        gap: 16px;
+        padding-inline: var(--spacing-inline);
+        border-radius: 16px;
+    }
+
+    .container li p {
+        flex-grow: 1;
+        font-size: 1.15rem;
+        display: block;
+    }
+
+    .container li:hover {
+        background-color: var(--secondary-color);
+        border-radius: 12px;
+    }
+
+    .container .selected {
+        border-bottom: none;
+    }
+
+    .container .selected p {
+        font-weight: 700;
+        color: var(--main-color)
+    }
+
+    .selected svg {
+        fill: var(--main-color);
+    }
+}

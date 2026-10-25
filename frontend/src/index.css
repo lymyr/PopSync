@@ -56,18 +56,24 @@ h1, h2, h3, h4, h5, h6 {
 
 :root {
   --font-color: rgb(240, 240, 240);
-  --bg-color: rgb(14, 14, 14);
-  --main-color: #ffd767;
-  --secondary-color: rgb(211, 162, 215);
-  --secondary-color-dark: rgb(41, 25, 42);
+  --bg-color: rgb(17, 17, 17);
+  --main-color: #e2bee8;
+  --main-color-light: #f5d6f9;
+  --main-color-dark: rgb(41, 25, 42);
+  --secondary-color: rgb(42, 42, 42);
+  --secondary-color-light: rgb(62, 62, 62);
+  --max-width: 1920px;
+  --inline-space: 24px;
+  --radius: 8px;
 
-  background-color: var(--bg-color);
+  background-color: black;
   color: var(--font-color);
   font-family: Arial, Helvetica, sans-serif;
 }
 
+textarea,
 input {
-  --bg-color: rgb(36, 36, 36);
+  --bg-color: var(--secondary-color);
   background-color: var(--bg-color);
   color: var(--font-color);
   border: 1px solid var(--bg-color);
@@ -78,11 +84,28 @@ input {
   transition: background-color 100ms ease-in-out;
 }
 
+textarea:focus,
 input:focus {
   outline: none;
-  background-color: rgb(54, 54, 54);
+  background-color: var(--secondary-color-light);
 }
 
 a {
   color: rgb(146, 202, 244);
+}
+
+button {
+  background-color: var(--secondary-color);
+  padding-inline: 12px;
+  border-radius: 4px;
+  color: var(--font-color);
+  border: none;
+  cursor: pointer;
+
+  will-change: background-color;
+  transition: background-color 200ms ease-out;
+}
+
+button:hover {
+  background-color: var(--secondary-color-light);
 }

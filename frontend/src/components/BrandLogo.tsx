@@ -6,11 +6,11 @@ export default function BrandLogo() {
         <div className={styles.container}>
             <div>
                 <img 
-                    src="../../public/logo2-bright.png"
+                    src="/logo-purple.png"
                     alt="Logo"
                 />
             </div>
-            <p>Pop<span>Sync</span></p>
+            <p>PopSync</p>
         </div>
     )
 }

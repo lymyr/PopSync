@@ -1,3 +1,7 @@
+div:has(> .container) {
+    background-color: var(--bg-color);
+}
+
 .container {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -14,7 +18,7 @@
 .container > div:last-child {
     display: flex;
     justify-content: center;
-    background-color: var(--secondary-color-dark);
+    background-color: var(--main-color-dark);
     margin: 16px;
     margin-left: 0px;
     border-radius: 8px;
@@ -35,18 +39,20 @@
     .container {
         display: flex;
         flex-direction: column-reverse;
-        background-color: var(--secondary-color-dark);
+        background-color: var(--main-color-dark);
     }
 
     .container > div:first-child {
         flex-grow: 1;
-        border-radius: 24px 24px 0px 0px;
-        padding: 24px;
+        --radius: 40px;
+        border-radius: var(--radius) var(--radius) 0px 0px;
+        padding-block: 120px;
+        align-items: start;
     }
 
     .container > div:last-child {
         margin: 0;
         border-radius: 0;   
-        padding: 24px;
+        padding: 48px;
     }
 }

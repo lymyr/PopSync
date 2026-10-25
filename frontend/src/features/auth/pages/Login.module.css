@@ -23,7 +23,7 @@
 }
 
 .button {
-    background-color: var(--secondary-color);
+    background-color: var(--main-color);
     border: none;
     padding: 4px;
     font-weight: 600;
@@ -37,7 +37,7 @@
 }
 
 .button:hover {
-    background-color: var(--font-color);
+    background-color: var(--main-color-light);
 }
 
 .btnContainer {
@@ -46,21 +46,8 @@
 }
 
 .btnContainer > button:first-child {
-    background-color: rgb(42, 42, 42);
-    padding-inline: 12px;
-    border-radius: 4px;
-    color: var(--font-color);
-    border: none;
     font-size: 0.8rem;
     letter-spacing: 8%;
-    cursor: pointer;
-
-    will-change: background-color;
-    transition: background-color 200ms ease-out;
-}
-
-.btnContainer > button:first-child:hover {
-    background-color: rgb(62, 62, 62);
 }
 
 .btnContainer > button:last-child {
