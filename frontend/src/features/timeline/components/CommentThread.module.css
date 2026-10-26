@@ -1,16 +1,23 @@
-.container {
+.container ol,
+.container li {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+li.thread {
     display:flex;
     flex-direction: column;
     gap: 16px;
-    padding: 8px 16px;
+    padding: 8px 16px ;
 }
 
-.subcommentContainer {
+.repliesContainer {
     display: flex;
     flex-direction: column;
     gap: 16px;
 }
 
-.subcommentContainer > div {
+.repliesContainer > li {
     border-left: 1px solid var(--font-color-dark);
 }
