@@ -23,21 +23,8 @@
 }
 
 .button {
-    background-color: var(--main-color);
-    border: none;
     padding: 4px;
-    font-weight: 600;
-    cursor: pointer;
     font-size: 1.25rem;
-    border-radius: 4px;
-    color: var(--bg-color);
-
-    will-change: background-color;
-    transition: background-color 200ms ease-out;
-}
-
-.button:hover {
-    background-color: var(--main-color-light);
 }
 
 .btnContainer {

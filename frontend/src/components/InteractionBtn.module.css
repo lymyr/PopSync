@@ -1,0 +1,24 @@
+.container {
+    display: flex;
+    align-items: center;
+    padding: 2px 8px;
+    gap: 8px;
+
+    background-color: transparent;
+}
+
+.container svg {
+    stroke: var(--font-color);
+    stroke-width: 1.5px;
+    width: 24px;
+}
+
+.filled {
+    font-weight: 600;
+    color: var(--main-color)
+}
+
+.filled svg {
+    fill: var(--main-color);
+    stroke: var(--main-color);
+}

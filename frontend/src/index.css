@@ -55,8 +55,8 @@ h1, h2, h3, h4, h5, h6 {
 
 
 :root {
-  --font-color: rgb(240, 240, 240);
-  --font-color-dark: rgb(187, 187, 187);
+  --font-color: rgb(220, 220, 220);
+  --font-color-dark: rgb(173, 173, 173);
   --bg-color: rgb(17, 17, 17);
   --main-color: #e2bee8;
   --main-color-light: #f5d6f9;
@@ -72,6 +72,19 @@ h1, h2, h3, h4, h5, h6 {
   background-color: black;
   color: var(--font-color);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+.hidden-visually {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
 
 textarea,
@@ -111,4 +124,23 @@ button {
 
 button:hover {
   background-color: var(--secondary-color-light);
+}
+
+.actionBtn {
+  background-color: var(--main-color);
+  color: var(--bg-color);
+  font-weight: 600;
+}
+
+.actionBtn:hover {
+  background-color: var(--main-color-light);
+}
+
+.profile {
+  --size: 44px;
+  min-width: var(--size);
+  width: var(--size);
+  height:  var(--size);
+  object-fit: cover;
+  border-radius: 50%;
 }

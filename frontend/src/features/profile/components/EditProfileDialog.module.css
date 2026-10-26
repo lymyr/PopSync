@@ -1,0 +1,18 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: var(--content-padding);
+    padding-top: 0;
+}
+
+.container textarea {
+    resize: vertical;
+}
+
+.container > div:has(> textarea),
+.container > div:has(> input) {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}

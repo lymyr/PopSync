@@ -1,0 +1,27 @@
+.container {
+    display: flex;
+    gap: 12px;
+}
+
+.container > div {
+    --comment-content-gap: 2px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--comment-content-gap);
+}
+
+.commentHeader p {
+    font-weight: 700;
+}
+
+.commentHeader span {
+    font-weight: 400;
+    font-size: 0.85rem;
+    color: var(--font-color-dark);
+}
+
+.container > div > div:last-child {
+    display: flex;
+    gap: 16px;
+    margin-top: calc(var(--comment-content-gap) + 4px);
+}

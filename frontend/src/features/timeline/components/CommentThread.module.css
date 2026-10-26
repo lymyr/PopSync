@@ -1,0 +1,16 @@
+.container {
+    display:flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 8px 16px;
+}
+
+.subcommentContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.subcommentContainer > div {
+    border-left: 1px solid var(--font-color-dark);
+}

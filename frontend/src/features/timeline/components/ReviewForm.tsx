@@ -13,6 +13,7 @@ export default function ReviewForm() {
                 <img 
                     alt="your profile picture" 
                     src="/defaultPfp.webp"
+                    className="profile"
                 />
                 <div>
                 {/* todo: add dropdown for search based off user watch list */}
@@ -34,7 +35,7 @@ export default function ReviewForm() {
                 />
             </div>
             </div>
-            <button>Post</button>
+            <button className="actionBtn">Post</button>
         </form>
     )
 }

@@ -24,7 +24,7 @@ export default function Header() {
                             <p>Connections</p>
                         </li>
                         <li className={styles.profile}>
-                            <img src="/defaultPfp.webp" alt="Profile"/>
+                            <img src="/defaultPfp.webp" alt="Profile" className="profile"/>
                             <p>Profile</p>
                         </li>
                     </ul>

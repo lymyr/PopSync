@@ -1,3 +1,14 @@
+.container > *:first-child {
+    isolation: isolate;
+    z-index: 1;
+}
+
+.container main {
+    isolation: isolate;
+    z-index: 0;
+}
+
+.container main > div,
 .container main {
     padding: var(--inline-space);
     display: flex;
@@ -5,9 +16,20 @@
     gap: var(--inline-space);
 }
 
+.container main > div {
+    padding: 0;
+}
+
 @media screen and (min-width: 1000px) {
     .container {
         display: grid;
         grid-template-columns: 1fr 4fr;
+    }
+}
+
+@media screen and (min-width: 1920px) {
+    .container {
+        max-width: 1920px;
+        margin: auto;
     }
 }

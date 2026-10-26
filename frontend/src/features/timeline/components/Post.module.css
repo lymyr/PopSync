@@ -10,20 +10,16 @@
     gap: 12px;
 }
 
-.authorContainer img {
-    --size: 44px;
-    min-width: var(--size);
-    width: var(--size);
-    height: var(--size);
-    object-fit: cover;
-    border-radius: 50%;
+.authorContainer a {
+    color: var(--font-color);
+    text-decoration: none;
 }
 
-.authorContainer > div > p:first-child {
+.authorContainer > div > *:first-child {
     font-weight: 600;
 }
 
-.authorContainer > div > p:last-child {
+.authorContainer > div > *:last-child {
     font-size: 0.75rem;
     color: var(--font-color-dark)
 }
@@ -103,7 +99,7 @@
 }
 
 .interactionContainer svg {
-    stroke: white;
+    stroke: var(--font-color);
     stroke-width: 1.5px;
     width: 24px;
 }

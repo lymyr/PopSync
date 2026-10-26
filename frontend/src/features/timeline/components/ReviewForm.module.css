@@ -28,15 +28,6 @@
     width: 100%;
 }
 
-.postContainer img {
-    --size: 36px;
-    min-width: var(--size);
-    width: var(--size);
-    height: var(--size);
-    border-radius: 50%;
-    object-fit: cover;
-}
-
 .searchContainer {
     display: flex;
     flex-direction: column;
@@ -91,14 +82,6 @@
 
 
 .container > button {
-    font-size: 1rem;
-    font-weight: 700;
-    background-color: var(--main-color);
-    color: var(--bg-color);
     margin-left: auto;
     padding: 2px 32px;
-}
-
-.container > button:hover {
-    background-color: var(--main-color-light);
 }

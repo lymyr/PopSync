@@ -18,6 +18,7 @@
     min-width: var(--size);
     width: var(--size);
     height: var(--size);
+    object-fit: cover;
     border-radius: 50%;
 }
 

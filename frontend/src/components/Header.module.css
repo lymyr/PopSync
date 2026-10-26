@@ -82,15 +82,7 @@
 
 .profile img {
     --size: var(--icon-size);
-    text-align: center;
-    font-size: 0.75rem;
-    border-radius: 50%;
     margin: auto;
-    width: var(--size);
-    height: var(--size);
-    object-fit: cover;
-
-    
 }
 
 @media screen and (max-width: 500px) {

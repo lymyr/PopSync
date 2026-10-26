@@ -3,11 +3,19 @@ import Login from "./features/auth/pages/Login";
 import Register from "./features/auth/pages/Register";
 import Timeline from "./features/timeline/pages/Timeline";
 import Connection from "./features/connections/pages/Connection";
+import PostDialog from "./features/timeline/components/PostDialog";
+import Profile from "./features/profile/pages/Profile";
 
 const routes: RouteObject[] = [
     {
         path: "/",
-        element: <Timeline />
+        element: <Timeline />,
+        children: [
+            {
+                path: "/posts/:postId",
+                element: <PostDialog />
+            }
+        ]
     },
     {
         path: "/login",
@@ -20,6 +28,10 @@ const routes: RouteObject[] = [
     {
         path: "/connections",
         element: <Connection />
+    },
+    {
+        path: "/profile",
+        element: <Profile />
     }
 ]
 

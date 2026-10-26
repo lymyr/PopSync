@@ -22,7 +22,7 @@ export default function Register() {
                     </div>
                 </div>
 
-                <button className={styles.button}>Register</button>
+                <button className={`actionBtn ${styles.button}`}>Register</button>
 
                 <p>Already have an account? Sign in <Link to={"/login"}>here</Link></p>
             </form>

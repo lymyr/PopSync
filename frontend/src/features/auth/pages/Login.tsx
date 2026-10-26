@@ -19,7 +19,7 @@ export default function Login() {
                 </div>
                 <div className={styles.btnContainer}>
                     <button>Guest</button>
-                    <button className={styles.button}>Login</button>
+                    <button className={`actionBtn ${styles.button}`}>Login</button>
                 </div>
                 <p>Don't have an account yet? Sign up <Link to={"/register"}>here</Link></p>
             </form>
