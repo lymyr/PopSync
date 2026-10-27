@@ -5,6 +5,8 @@ import Timeline from "./pages/Timeline";
 import Connection from "./features/connections/pages/Connection";
 import PostDialog from "./features/post/components/PostDialog";
 import Profile from "./features/profile/pages/Profile";
+import WatchList from "./features/watchList/pages/WatchList";
+import WatchGroup from "./features/watchGroup/pages/WatchGroup";
 
 const routes: RouteObject[] = [
     {
@@ -32,7 +34,15 @@ const routes: RouteObject[] = [
     {
         path: "/profile",
         element: <Profile />
-    }
+    },
+    {
+        path: "/watch-list",
+        element: <WatchList />
+    },
+    {
+        path: "/watch-group",
+        element: <WatchGroup />
+    },
 ]
 
 export default routes
