@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import Post from "./Post";
-import CommentThread from "./CommentThread";
 import Dialog from "../../../components/Dialog";
+import CommentSection from "../../comment/components/CommentSection";
 
 export default function PostDialog() {
     const dialogRef: React.Ref<HTMLDialogElement> | undefined = useRef(null)
@@ -19,7 +19,7 @@ export default function PostDialog() {
             ref={dialogRef}
         >
             <Post />
-            <CommentThread />
+            <CommentSection />
         </Dialog>
     )
 }
