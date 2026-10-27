@@ -4,7 +4,7 @@
     padding: var(--content-padding);
 }
 
-.container h2 {
+.container > h2 {
     padding-bottom: 12px;
     border-bottom: 1px solid var(--secondary-color);
 }
