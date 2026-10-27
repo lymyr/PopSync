@@ -1,24 +1,36 @@
+import { useState } from "react"
 import LikeBtn from "../../../components/LikeBtn"
 import styles from "./Comment.module.css"
+import CommentForm from "./CommentForm"
 
 export default function Comment() {
+    const [showReply, setShowReply] = useState(false)
+
     return (
-        <article className={styles.container}>
-            <img src="/defaultPfp.webp" alt="profile picture" className="profile"/>
-            <div>
-                <div className={styles.commentHeader}>
-                    <p>Username <span>• <time>Sept 05, 4312</time></span></p>
-                </div>
-                <div className={styles.commentContent}>
-                    <p>
-                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Neque unde enim nobis necessitatibus accusantium quaerat, voluptate esse tempora sit. Neque totam sed sunt excepturi reprehenderit mollitia corrupti nihil magnam consectetur.
-                    </p>
-                </div>
+        <>
+            <article className={styles.container}>
+                <img src="/defaultPfp.webp" alt="profile picture" className="profile"/>
                 <div>
-                    <button>Reply</button>
-                    <LikeBtn amount={"99+"} />
+                    <div className={styles.commentHeader}>
+                        <p>Username <span>• <time>Sept 05, 4312</time></span></p>
+                    </div>
+                    <div className={styles.commentContent}>
+                        <p>
+                            Lorem ipsum dolor sit amet consectetur adipisicing elit. Neque unde enim nobis necessitatibus accusantium quaerat, voluptate esse tempora sit. Neque totam sed sunt excepturi reprehenderit mollitia corrupti nihil magnam consectetur.
+                        </p>
+                    </div>
+                    <div>
+                        <button
+                            onClick={() => setShowReply(true)}
+                        >Reply</button>
+                        <LikeBtn amount={"99+"} />
+                    </div>
                 </div>
-            </div>
-        </article>
+            </article>
+            {
+                showReply && <CommentForm placeholder={`Write a reply to {username}`}/>
+            }
+        </>
+        
     )
 }

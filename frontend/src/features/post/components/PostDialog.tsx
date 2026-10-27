@@ -2,6 +2,8 @@ import { useEffect, useRef } from "react";
 import Post from "./Post";
 import Dialog from "../../../components/Dialog";
 import CommentSection from "../../comment/components/CommentSection";
+import CommentForm from "../../comment/components/CommentForm";
+import styles from "./PostDialog.module.css"
 
 export default function PostDialog() {
     const dialogRef: React.Ref<HTMLDialogElement> | undefined = useRef(null)
@@ -19,6 +21,10 @@ export default function PostDialog() {
             ref={dialogRef}
         >
             <Post />
+            <section className={styles.commentFormContainer}>
+                <h3>Add a comment</h3>
+                <CommentForm />
+            </section>
             <CommentSection />
         </Dialog>
     )

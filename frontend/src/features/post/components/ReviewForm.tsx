@@ -1,9 +1,10 @@
 import { useState } from "react"
 import styles from "./ReviewForm.module.css"
+import AdaptiveTextArea from "../../../components/AdaptiveTextArea"
 
 export default function ReviewForm() {
     const [content, setContent] = useState([""])
-    
+
     // todo: update this in future
     // const [selectedMedia, setSelectedMedia] = useState() 
 
@@ -25,13 +26,10 @@ export default function ReviewForm() {
                     <button type="button">X</button>
                     <p>Show/Movie asdna slkdnaslkdnaslkd nalksdnad alskd naslkd nasdksa  Title</p>
                 </div>
-                <textarea 
-                    placeholder="What are your thoughts?"
-                    wrap="soft"
-                    rows={content.length > 0 ? content.length : 1}
-                    onChange={(e) => {
-                        setContent(e.target.value.split(`\n`))
-                    }}
+                <AdaptiveTextArea 
+                    content={content}
+                    setContent={setContent}
+                    attributes={{ placeholder: "What are your thoughts?" }}
                 />
             </div>
             </div>
