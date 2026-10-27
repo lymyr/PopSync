@@ -55,21 +55,22 @@ h1, h2, h3, h4, h5, h6 {
 
 
 :root {
-  --font-color: rgb(220, 220, 220);
+  --font-color: rgb(211, 211, 211);
   --font-color-dark: rgb(173, 173, 173);
-  --bg-color: rgb(17, 17, 17);
-  --main-color: #e2bee8;
-  --main-color-light: #f5d6f9;
-  --main-color-dark: rgb(41, 25, 42);
-  --secondary-color: rgb(42, 42, 42);
-  --secondary-color-light: rgb(62, 62, 62);
+  --bg-color: rgb(31, 31, 32);
+  --main-color: #cc9ed7;
+  --main-color-light: #deaaeb;
+  --main-color-dark: rgb(61, 40, 62);
+  --secondary-color: rgb(45, 46, 46);
+  --secondary-color-light: rgb(62, 62, 63);
   
   --max-width: 1920px;
   --inline-space: 16px;
   --radius: 8px;
-  --content-padding: 16px;
+  --content-padding: 24px;
 
-  background-color: black;
+  --blank-bg-color: rgb(21, 22, 23);
+  background-color: var(--blank-bg-color);
   color: var(--font-color);
   font-family: Arial, Helvetica, sans-serif;
 }
@@ -108,6 +109,10 @@ input:focus {
 
 a {
   color: rgb(146, 202, 244);
+}
+
+img {
+  filter: brightness(.85);
 }
 
 button {

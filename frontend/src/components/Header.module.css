@@ -1,8 +1,8 @@
 .parent {
     position: sticky;
     top: 0;
-    box-shadow: 0px 4px 12px black;
-    background-color: var(--bg-color);
+    box-shadow: 0px 4px 12px var(--blank-bg-color);
+    background-color: var(--blank-bg-color);
     --icon-size: 24px;
 }
 
@@ -56,7 +56,7 @@
 .container li {
     cursor: pointer;
     width: 100%;
-    border-bottom: 1px solid var(--bg-color);
+    border-bottom: 1px solid var(--blank-bg-color);
 }
 
 .container li p {
@@ -104,13 +104,21 @@
     }
 }
 
+@media screen and (max-width: 400px) {
+    .container > div:first-child img {
+        max-width: 24px;
+    }
+    .parent {
+        --icon-size: 20px;
+    }
+}
+
 /* remember to sync with PageContainer.module.css */
 @media screen and (min-width: 1000px) {
     .parent {
         position: static;
         box-shadow: none;
-        background-color: var(--bg-color);
-        --icon-size: 24px;
+        --icon-size: 32px;
         min-height: 100vh;
         position: relative;
 
@@ -138,26 +146,14 @@
 
         padding-inline: var(--spacing-inline);
     }
-
-    .container > div:first-child img {
-        max-width: 48px;
-    }
-    .container > div:first-child p {
-        display: block;
-    }
     
     .container > div:first-child > div:first-child {
         margin: auto;
     }
 
-    .container > div:first-child > div:first-child p {
-        font-size: 3rem;
-    }
-
     .container > div:first-child input {
         padding: 8px;
     }
-
 
     .container nav {
         width: 100%;
