@@ -9,7 +9,6 @@
 .container {
     max-width: var(--max-width);
     display: flex;
-    align-items: center;
     justify-content: center;
     flex-direction: column;
     gap: 8px;
@@ -27,7 +26,7 @@
 .container > div:first-child {
     padding-top: 16px;
     display: flex;
-    gap: 12px;
+    gap: 20px;
     align-items: center;
 }
 
@@ -51,7 +50,7 @@
 
 .container li {
     cursor: pointer;
-    width: 80px;
+    width: 100%;
     padding-block: 16px;
 }
 
@@ -86,6 +85,12 @@
 }
 
 @media screen and (max-width: 500px) {
+    .container > div:first-child {
+        gap: 12px;
+    }
+    .container > div:first-child input {
+        max-width: 100%;
+    }
     .container > div:first-child p {
         display: none;
     }
