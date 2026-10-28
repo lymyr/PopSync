@@ -4,3 +4,8 @@
     margin: 0;
     list-style: none;
 }
+
+.container {
+    --comment-padding-value: 8px 16px;
+    --reply-border-value: 1px solid var(--main-color);
+}

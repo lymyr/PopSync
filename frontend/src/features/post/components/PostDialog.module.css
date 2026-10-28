@@ -1,6 +1,4 @@
 .commentFormContainer  {
-    border-radius: 0;
-    border: none;
     border-top: 1px solid var(--secondary-color);
     border-bottom: 1px solid var(--secondary-color);
     margin-bottom: 16px;
