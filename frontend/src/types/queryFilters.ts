@@ -1,0 +1,1 @@
+export type queryFilters = "users" | "shows" | "movies"

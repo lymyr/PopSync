@@ -7,6 +7,7 @@ import PostDialog from "./features/post/components/PostDialog";
 import Profile from "./features/profile/pages/Profile";
 import WatchList from "./features/watchList/pages/WatchList";
 import WatchGroup from "./features/watchGroup/pages/WatchGroup";
+import SearchResults from "./features/search/pages/SearchResults";
 
 const routes: RouteObject[] = [
     {
@@ -43,6 +44,10 @@ const routes: RouteObject[] = [
         path: "/watch-group",
         element: <WatchGroup />
     },
+    {
+        path: "/search/:filter",
+        element: <SearchResults />
+    }
 ]
 
 export default routes
