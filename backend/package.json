@@ -8,13 +8,16 @@
     "test": "vitest --no-file-parallelism",
     "lint": "oxlint",
     "checks": "npm run lint && npx tsc && npm test",
-    "setup-testdb": "NODE_ENV=test npx prisma migrate deploy && npx prisma generate",
+    "setup-testdb": "NODE_ENV=test npx prisma migrate reset && npx prisma migrate deploy && npx prisma generate",
     "serve": "node src/app.ts",
     "dev": "node --watch src/app.ts"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
+    "@types/express-session": "^1.19.0",
     "@types/node": "^26.6.5",
+    "@types/passport": "^1.0.17",
+    "@types/passport-local": "^1.0.38",
     "@types/pg": "^8.23.1",
     "@types/supertest": "^7.2.1",
     "oxlint": "^1.89.0",
@@ -26,9 +29,13 @@
   "dependencies": {
     "@prisma/adapter-pg": "^7.10.1",
     "@prisma/client": "^7.10.1",
+    "@quixo3/prisma-session-store": "^3.1.21",
     "bcryptjs": "^3.0.3",
     "express": "^5.3.0",
+    "express-session": "^1.19.0",
     "express-validator": "^7.3.2",
+    "passport": "^0.7.0",
+    "passport-local": "^1.0.0",
     "pg": "^8.23.1"
   }
 }

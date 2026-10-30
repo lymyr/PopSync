@@ -1,6 +1,8 @@
 import { Router } from "express";
-import { getUsers, register } from "../controllers/userController.ts";
-import { throwerHelper, UserValidation } from "../../middleware/validation.ts";
+import { getUsers, login, register } from "../controllers/userController.ts";
+import { UserValidation } from "../../middleware/validation/UserValidation.ts";
+import { throwerHelper } from "../../middleware/validation/Validation.ts";
+import passport from "../../lib/passport.ts";
 
 const userRouter = Router()
 
@@ -8,9 +10,14 @@ const userRouter = Router()
 userRouter.get("/search", getUsers)
 
 userRouter.post("/", 
-    UserValidation.validateRegisterPayload,
+    UserValidation.register,
     throwerHelper,
     register
+)
+
+userRouter.post("/authenticate",
+    passport.authenticate("local"),
+    login
 )
 
 export default userRouter

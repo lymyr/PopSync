@@ -1,36 +1,19 @@
-import type { Request, Response, NextFunction } from "express"
-import { body, validationResult } from "express-validator"
-import { prisma } from "../lib/prisma.ts"
+import { body } from "express-validator"
+import { prisma } from "../../lib/prisma.ts"
+import Validation from "./Validation.ts"
 
-export function throwerHelper(req: Request, res: Response, next: NextFunction) {
-    const err = validationResult(req)
-    if (err.isEmpty())
-        return next()
-
-    res.status(400).json({
-        validationErrors: err.mapped(),
-        success: false
-    })
-}
-
-class Validation {
-    constructor() {
-        throw new Error("class does not allow instances")
-    }
+export interface Register {
+    username: string,
+    password: string,
+    confirmPassword: string
 }
 
 export class UserValidation extends Validation {
-    static username = body("username")
+    static username = () => body("username")
         .notEmpty().withMessage("please input a username")
         .not().matches(/[-_.]{2,}/g).withMessage("hypens (-), underscores (_), and periods (.) should not be next to each other")
         .not().matches(/^[-_.]|[-_.]$/g).withMessage("usernames should not start or end with hypens (-), underscores (_), and periods (.)")
-        .isAlphanumeric(undefined, { ignore: '_-.' }).withMessage("username can only contain alphanumeric values, hypens (-), underscores (_), and periods (.)")
-        .bail()
-        .custom(async (username) => {
-            const user = await prisma.user.findFirst({ where: { username }})
-            if (user)
-                throw new Error("Username already exists")
-        })
+        .isAlphanumeric(undefined, { ignore: '_-.' }).withMessage("username can only contain alphanumeric values, hypens (-), underscores (_), and periods (.)")      
 
     static password = body("password").notEmpty().withMessage("Please input a password").isString()
         .isStrongPassword({
@@ -48,8 +31,15 @@ export class UserValidation extends Validation {
             return false
         }).withMessage("passwords do not match")
 
-    static validateRegisterPayload = [
-        this.username,
+    static register = [
+        this.username()
+            .bail()
+            .custom(async (username) => {
+                const user = await prisma.user.findFirst({ where: { username }})
+                if (user)
+                    throw new Error("Username already exists")
+            }
+        ),
         this.password,
         this.confirmPassword
     ]
