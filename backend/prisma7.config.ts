@@ -5,12 +5,16 @@ import { defineConfig } from "prisma/config";
 
 process.loadEnvFile()
 
+const connectionString = process.env.NODE_ENV != "test" ? 
+    `${process.env.DATABASE_URL}` :
+    `${process.env.DATABASE_URL_TEST}`
+
 export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: {
     path: "prisma/migrations",
   },
   datasource: {
-    url: process.env["DATABASE_URL"],
+    url: connectionString,
   },
 });

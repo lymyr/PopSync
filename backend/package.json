@@ -5,9 +5,10 @@
   "type": "module",
   "main": "app.js",
   "scripts": {
-    "test": "vitest",
+    "test": "vitest --no-file-parallelism",
     "lint": "oxlint",
-    "checks": "npm run lint && npm test",
+    "checks": "npm run lint && npx tsc && npm test",
+    "setup-testdb": "NODE_ENV=test npx prisma migrate deploy && npx prisma generate",
     "serve": "node src/app.ts",
     "dev": "node --watch src/app.ts"
   },
@@ -25,7 +26,9 @@
   "dependencies": {
     "@prisma/adapter-pg": "^7.10.1",
     "@prisma/client": "^7.10.1",
+    "bcryptjs": "^3.0.3",
     "express": "^5.3.0",
+    "express-validator": "^7.3.2",
     "pg": "^8.23.1"
   }
 }

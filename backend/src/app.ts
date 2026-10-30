@@ -4,6 +4,7 @@ import v1 from "./v1/entryPoint.ts"
 process.loadEnvFile()
 
 const app = express()
+app.use(express.json())
 
 app.use("/v1", v1)
 

@@ -1,8 +1,16 @@
 import { Router } from "express";
-import { getUsers } from "../controllers/userController.ts";
+import { getUsers, register } from "../controllers/userController.ts";
+import { throwerHelper, UserValidation } from "../../middleware/validation.ts";
 
 const userRouter = Router()
 
-userRouter.get("/", getUsers)
+// todo: update with query
+userRouter.get("/search", getUsers)
+
+userRouter.post("/", 
+    UserValidation.validateRegisterPayload,
+    throwerHelper,
+    register
+)
 
 export default userRouter
