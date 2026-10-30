@@ -1,0 +1,172 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id Int @id @default(autoincrement())
+  username String @unique
+  password String
+  description String?
+  pfpPath String @map("pfp_path")
+
+  reviews Review[]
+  comments Comment[]
+  likes Like[]
+
+  sentConnection Connection[] @relation("sender")
+  receivedConnection Connection[] @relation("receiver")
+
+  watchListMovie WatchListMovie[]
+  watchListSeries WatchListSeries[]
+
+  watchGroupUser WatchGroupUser[]
+  
+  @@map("user")
+}
+
+model Connection {
+  senderId Int @map("sender_id")
+  receiverId Int @map("receiver_id")
+  sender User @relation(name: "sender",fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation(name: "receiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  dateAdded DateTime @default(now())
+  dateUpdated DateTime @updatedAt
+  status ConnectionStatus @default(pending)
+
+  @@id([senderId, receiverId])
+  @@map("connection")
+}
+
+model Review {
+  id Int @id @default(autoincrement())
+  authorId Int @map("author_id")
+  author User @relation(fields: [authorId], references: [id])
+  content String
+  isPublic Boolean @default(true) @map("is_public")
+  dateAdded DateTime @map("date_added") @default(now())
+  dateUpdated DateTime @map("date_updated") @updatedAt
+
+  commentCount Int @default(0) @map("comment_count")
+  comments Comment[]  
+  likeCount Int @default(0) @map("like_count")
+  likes Like[]
+
+  @@map("review")
+}
+
+model Comment {
+  id Int @id @default(autoincrement())
+  authorId Int @map("author_id")
+  author User @relation(fields: [authorId], references: [id])
+  reviewId Int @map("review_id")
+  review Review @relation(fields: [reviewId], references: [id])
+  content String
+  dateAdded DateTime @map("date_added") @default(now())
+  dateUpdated DateTime @map("date_updated") @updatedAt
+
+  @@map("comment")
+}
+
+model Like {
+  userId Int
+  user User @relation(fields: [userId], references: [id])
+  reviewId Int
+  review Review @relation(fields: [reviewId], references: [id])
+
+  @@id([userId, reviewId])
+  @@map("like")
+}
+
+model Movie {
+  id Int @id
+  title String
+  originalTitle String @map("original_title")
+  overview String
+  posterPath String @map("poster_path")
+  backdropPath String @map("backdrop_path")
+  releaseDate DateTime @map("release_date")
+  voteAverage Decimal @db.Decimal(4, 3) @map("vote_average")
+  runtime Int
+
+  watchList WatchListMovie[]
+
+  watchGroup WatchGroup[]
+
+  @@map("movie")
+}
+
+model Series {
+  id Int @id
+  name String
+  originalName String @map("original_name")
+  overview String
+  posterPath String @map("poster_path")
+  backdropPath String @map("backdrop_path")
+  firstAirDate DateTime @map("first_air_date")
+  voteAverage Decimal @db.Decimal(4, 3) @map("vote_average")
+  runtime Int
+  seasons Json
+
+  watchList WatchListSeries[]
+
+  watchGroup WatchGroup[]
+
+  @@map("series")
+}
+
+model WatchListMovie {
+  userId Int
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  movieId Int
+  movie Movie @relation(fields: [movieId], references: [id])
+
+  @@id([userId, movieId])
+  @@map("watchlist_movie")
+}
+
+model WatchListSeries {
+  userId Int
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  movieId Int
+  series Series @relation(fields: [movieId], references: [id])
+
+  @@id([userId, movieId])
+  @@map("watchlist_series")
+}
+
+model WatchGroup {
+  id Int @id @default(autoincrement())
+  users WatchGroupUser[]
+  series Series[]
+  movies Movie[]
+
+  @@map("watch_group")
+}
+
+model WatchGroupUser {
+  watchGroupId Int @map("watch_group_id")
+  watchGroup WatchGroup @relation(fields: [watchGroupId], references: [id])
+  userId Int @map("user_id")
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isAdmin Boolean @default(false) @map("is_admin")
+
+  @@id([watchGroupId, userId])
+  @@map("watch_group_user")
+}
+
+enum ConnectionStatus {
+  pending
+  accepted
+
+  @@map("connection_status")
+}
