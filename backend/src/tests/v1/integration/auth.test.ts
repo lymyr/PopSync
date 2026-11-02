@@ -4,6 +4,10 @@ import request from "supertest"
 import { prisma } from "../../../lib/prisma.ts";
 process.loadEnvFile()
 
+afterAll(async () => {
+    await prisma.session.deleteMany()
+})
+
 describe("register", () => {
     const prismaUserCreateListener = vi.spyOn(prisma.user, "create")
     const registerReq = (username: string, password: string, confirmPassword: string) => {

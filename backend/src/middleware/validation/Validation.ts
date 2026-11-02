@@ -1,7 +1,8 @@
 import type { Request, Response, NextFunction } from "express"
 import { validationResult } from "express-validator"
 
-export function throwerHelper(req: Request, res: Response, next: NextFunction) {
+
+export function throwerHelper<params extends Record<string, any>, resBody, reqBody, reqQuery extends Record<string, any>>(req: Request<params, resBody, reqBody, reqQuery >, res: Response, next: NextFunction) {
     const err = validationResult(req)
     if (err.isEmpty())
         return next()

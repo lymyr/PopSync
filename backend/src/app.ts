@@ -4,6 +4,7 @@ import session from "express-session"
 import { PrismaSessionStore } from "@quixo3/prisma-session-store"
 import { prisma } from "./lib/prisma.ts"
 import passport from "./lib/passport.ts"
+import cors from "cors"
 
 process.loadEnvFile()
 
@@ -12,6 +13,7 @@ if (!process.env.SESSION_SECRET) {
 }
 
 const app = express()
+app.use(cors())
 app.use(express.json())
 app.use(session({
     cookie: {

@@ -5,7 +5,7 @@ import { useState } from "react";
 
 interface searchData {
     search: string;
-    filter: "show" | "movie" | "user";
+    filter: "series" | "movies" | "users";
 }
 
 export default function Header() {
@@ -13,8 +13,8 @@ export default function Header() {
     const param = useParams()
     const path = loc.pathname.split('/')[1]
 
-    const initialSelect = param.filter == "show" || param.filter == "movie" || param.filter == "user" ? 
-        param.filter : "show"
+    const initialSelect = param.filter == "series" || param.filter == "movies" || param.filter == "users" ? 
+        param.filter : "series"
     const [searchData, setSearchData] = useState<searchData>({
         filter: initialSelect,
         search: `${(new URLSearchParams(loc.search)).get("query") || ""}`
@@ -42,18 +42,18 @@ export default function Header() {
                             onChange={(e) => {
                                 clearTimeout(timeoutId)
                                 switch(e.target.value) {
-                                    case "show":
-                                    case "movie":
-                                    case "user":
+                                    case "series":
+                                    case "movies":
+                                    case "users":
                                         handleSearch(e.target.value)
                                         setSearchData({...searchData, filter: e.target.value});
                                 }  
                             }}
                             value={searchData.filter}
                         >
-                            <option value="show">Shows</option>
-                            <option value="movie">Movies</option>
-                            <option value="user">Users</option>
+                            <option value="series">Series</option>
+                            <option value="movies">Movies</option>
+                            <option value="users">Users</option>
                         </select>
                         <input type="search" placeholder="Search" 
                             onChange={(e) => {

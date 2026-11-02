@@ -3,11 +3,16 @@ import { getUsers, login, register } from "../controllers/userController.ts";
 import { UserValidation } from "../../middleware/validation/UserValidation.ts";
 import { throwerHelper } from "../../middleware/validation/Validation.ts";
 import passport from "../../lib/passport.ts";
+import SearchQueryValidation from "../../middleware/validation/SearchQueryValidation.ts";
+import type { SearchQuery } from "../../middleware/validation/SearchQueryValidation.ts";
 
 const userRouter = Router()
 
-// todo: update with query
-userRouter.get("/search", getUsers)
+userRouter.get("/search", 
+    SearchQueryValidation.searchUser,
+    throwerHelper<{}, {}, {}, SearchQuery>,
+    getUsers
+)
 
 userRouter.post("/", 
     UserValidation.register,
