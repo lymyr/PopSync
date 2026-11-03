@@ -40,7 +40,7 @@ describe("search users", async () => {
     })
 
     async function searchUser(username: string, lastId?: string) {
-        let url = `/v1/users/search?username=${username}`
+        let url = `/v1/users?username=${username}`
         if (lastId)
             url += `&lastId=${lastId}`
         return loggedUser.agent.get(url)
@@ -48,14 +48,14 @@ describe("search users", async () => {
 
     test("returns paginated users", async () => {
         const res = await searchUser("a")
-        const res2 = await searchUser("a", res.body.data.users[res.body.data.users.length - 1].id)
-        expect(res.body.data.users).toHaveLength(10)
-        expect(res2.body.data.users).toHaveLength(4)
+        const res2 = await searchUser("a", res.body.data[res.body.data.length - 1].id)
+        expect(res.body.data).toHaveLength(10)
+        expect(res2.body.data).toHaveLength(4)
     })
 
     test("doesn't show the logged user in search", async () => {
         const res = await searchUser("kar")
-        const usernames = res.body.data.users.map((u: {username: string}) => u.username)
+        const usernames = res.body.data.map((u: {username: string}) => u.username)
         expect(usernames).not.toEqual(expect.arrayContaining([loggedUser.details.username]))
     })
 

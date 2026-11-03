@@ -133,10 +133,10 @@ describe("read and delete connections", () => {
 
     test("returns all accepted connections", async () => {
         const [res, res2] = await Promise.all([user1.agent.get("/v1/connections"), user2.agent.get("/v1/connections")])
-        const connectionOfClient = res.body.data.connections[0].receiver.id == user2.details.id ? res.body.data.connections[0].receiver : res.body.data.connections[0].sender
-        const connectionOfClient2 = res.body.data.connections[0].receiver.id == user1.details.id ? res.body.data.connections[0].receiver : res.body.data.connections[0].sender
-        expect(res.body.data.connections.length).toBe(1)
-        expect(res2.body.data.connections.length).toBe(1)
+        const connectionOfClient = res.body.data[0].receiver.id == user2.details.id ? res.body.data[0].receiver : res.body.data[0].sender
+        const connectionOfClient2 = res.body.data[0].receiver.id == user1.details.id ? res.body.data[0].receiver : res.body.data[0].sender
+        expect(res.body.data.length).toBe(1)
+        expect(res2.body.data.length).toBe(1)
         expect(connectionOfClient.id).toBe(user2.details.id)
         expect(connectionOfClient2.id).toBe(user1.details.id)
     })

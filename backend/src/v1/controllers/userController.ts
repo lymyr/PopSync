@@ -42,9 +42,7 @@ export async function getUsers(req: Request<{}, {}, {}, SearchQuery>, res: Respo
     }
     const users = await prisma.user.findMany(opts)
     res.json({
-        data: {
-            users
-        }
+        data: users
     })
 }
 
@@ -56,12 +54,9 @@ export async function register(req:Request<{}, {}, Register>, res:Response) {
             password: hashed,
             pfpPath: "",
     }})
-    res.status(201).send("success")
+    res.sendStatus(201)
 }
 
 export async function login(req:Request, res:Response) {
-    res.status(200).json({
-        message: "login success",
-        success: true
-    })
+    res.sendStatus(200)
 }

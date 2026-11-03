@@ -38,7 +38,7 @@ export async function getAcceptedConnections(req: Request<{id: number}>, res: Re
         }
     })
 
-    res.json({ data: { connections } })
+    res.json({ data: connections })
 }
 
 export async function addConnection(req: Request<{id: number}>, res: Response) {
@@ -59,7 +59,8 @@ export async function acceptConnection(req: Request<{id: number}>, res: Response
             connectionId: {
                 senderId: req.params.id,
                 receiverId: actingUserId,
-            }
+            },
+            status: "pending"
         },
         data: {
             status: "accepted"

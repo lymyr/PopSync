@@ -22,7 +22,7 @@ userRouter.post("/authenticate",
 
 userRouter.use(isAuth)
 
-userRouter.get("/search", 
+userRouter.get("/", 
     SearchQueryValidation.searchUser,
     throwerHelper<{}, {}, {}, SearchQuery>,
     getUsers
