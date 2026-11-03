@@ -1,11 +1,11 @@
 import app from "../../../app.ts";
-import { afterEach, expect, test, vi, describe, beforeAll, afterAll } from "vitest"
+import { afterEach, expect, test, vi, describe, beforeAll, afterAll, beforeEach } from "vitest"
 import request from "supertest"
 import { prisma } from "../../../lib/prisma.ts";
 process.loadEnvFile()
 
-afterAll(async () => {
-    await prisma.session.deleteMany()
+afterEach(async () => {
+    await Promise.all([prisma.session.deleteMany(), prisma.user.deleteMany()])
 })
 
 describe("register", () => {
@@ -17,7 +17,6 @@ describe("register", () => {
     }
 
     afterEach(async () => {
-        await prisma.user.deleteMany()
         prismaUserCreateListener.mockClear()
     })
 
@@ -155,7 +154,7 @@ describe("login", () => {
             .send({ username, password })
     }
 
-    beforeAll(async () => {
+    beforeEach(async () => {
         await request(app)
             .post("/v1/users")
             .send({
@@ -165,25 +164,18 @@ describe("login", () => {
             })
     })
 
-    afterAll(async () => {
-        await prisma.user.deleteMany()
-    })
-
     test("correct credentials", async () => {
         const res = await loginRequest("pirate.king", "asdfgh123456")
-
         expect(res.status).toBe(200)
     })
 
     test("incorrect username", async () => {
         const res = await loginRequest("pirate.kingg", "asdfgh123456")
-        console.log(res.body)
         expect(res.status).toBe(401)
     })
 
     test("incorrect password", async () => {
         const res = await loginRequest("pirate.king", "zasdfgh123456")
-
         expect(res.status).toBe(401)
     })
 })

@@ -5,14 +5,9 @@ import { throwerHelper } from "../../middleware/validation/Validation.ts";
 import passport from "../../lib/passport.ts";
 import SearchQueryValidation from "../../middleware/validation/SearchQueryValidation.ts";
 import type { SearchQuery } from "../../middleware/validation/SearchQueryValidation.ts";
+import isAuth from "../../middleware/auth/isAuth.ts";
 
 const userRouter = Router()
-
-userRouter.get("/search", 
-    SearchQueryValidation.searchUser,
-    throwerHelper<{}, {}, {}, SearchQuery>,
-    getUsers
-)
 
 userRouter.post("/", 
     UserValidation.register,
@@ -23,6 +18,14 @@ userRouter.post("/",
 userRouter.post("/authenticate",
     passport.authenticate("local"),
     login
+)
+
+userRouter.use(isAuth)
+
+userRouter.get("/search", 
+    SearchQueryValidation.searchUser,
+    throwerHelper<{}, {}, {}, SearchQuery>,
+    getUsers
 )
 
 export default userRouter

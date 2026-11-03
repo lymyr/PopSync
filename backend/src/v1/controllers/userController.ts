@@ -8,13 +8,26 @@ import type { Prisma } from "../../../generated/prisma/client.ts"
 
 export async function getUsers(req: Request<{}, {}, {}, SearchQuery>, res: Response) {
     const query = matchedData<SearchQuery>(req)
+    const currentUser = req.user as NonNullable<typeof req.user>
     let opts: Prisma.UserFindManyArgs = {
         take: 10,
         where: { 
-            username: {
-                contains: query.username,
-                mode: "insensitive"
-            }    
+            AND: [
+                { 
+                    username: {
+                        contains: query.username,
+                        mode: "insensitive"
+                    } 
+                },
+                {
+                    NOT: {
+                        username: {
+                            contains: currentUser.username
+                        }
+                    }
+                }
+            ]
+               
         },
         orderBy: {
             id: "asc"
