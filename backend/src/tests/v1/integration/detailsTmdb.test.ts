@@ -1,4 +1,4 @@
-import { describe, test, beforeAll, expect, afterEach, vi } from "vitest";
+import { describe, test, beforeAll, expect, afterEach, vi, afterAll } from "vitest";
 import { testUserGen } from "../../utils/userGeneration.ts";
 import type { TestUser } from "../../utils/userGeneration.ts";
 import { prisma } from "../../../lib/prisma.ts";
@@ -12,8 +12,18 @@ beforeAll(async () => {
     user = (await testUserGen(1))[0] as TestUser
 })
 
+afterAll(async () => {
+    await Promise.all([
+        prisma.user.deleteMany(),
+        prisma.session.deleteMany()
+    ])
+})
+
 afterEach(async () => {
-    await Promise.all([prisma.movie.deleteMany(), prisma.series.deleteMany()])
+    await Promise.all([
+        prisma.movie.deleteMany(), 
+        prisma.series.deleteMany()
+    ])
 })
 
 type mediaType = "movies" | "series"

@@ -1,13 +1,18 @@
-import { beforeAll, describe, expect, test, vi } from "vitest"
+import { afterAll, beforeAll, describe, expect, test, vi } from "vitest"
 import { testUserGen, type TestUser } from "../../utils/userGeneration.ts"
 import TmdbMockPayloads from "../../mocks/TmdbMockPayloads.ts";
 import tmdb from "../../../lib/tmdb.ts";
+import { prisma } from "../../../lib/prisma.ts";
 
 let user: TestUser;
 beforeAll(async () => {
     vi.spyOn(Object.getPrototypeOf(tmdb.search), "movies").mockResolvedValue(TmdbMockPayloads.movieSearch)
     vi.spyOn(Object.getPrototypeOf(tmdb.search), "tvShows").mockResolvedValue(TmdbMockPayloads.seriesSearch)
     user = (await testUserGen(1))[0] as TestUser
+})
+
+afterAll(async () => {
+    await Promise.all([prisma.user.deleteMany(), prisma.session.deleteMany()])
 })
 
 type searchType = "movies" | "series"
