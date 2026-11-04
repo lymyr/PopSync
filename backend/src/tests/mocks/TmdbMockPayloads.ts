@@ -1,5 +1,5 @@
 // copy pasted from tmdb examples
-export default class tmdbMocks {
+export default class TmdbMockPayloads {
     constructor() {
         throw new Error("please don't invoke new instance of this class")
     }

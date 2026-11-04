@@ -97,14 +97,14 @@ model Like {
 }
 
 model Movie {
-  id            Int      @id
+  id            Int     @id
   title         String
-  originalTitle String   @map("original_title")
+  originalTitle String  @map("original_title")
   overview      String
-  posterPath    String   @map("poster_path")
-  backdropPath  String   @map("backdrop_path")
-  releaseDate   String   @map("release_date")
-  voteAverage   Decimal  @map("vote_average") @db.Decimal(4, 3)
+  posterPath    String  @map("poster_path")
+  backdropPath  String  @map("backdrop_path")
+  releaseDate   String  @map("release_date")
+  voteAverage   Decimal @map("vote_average") @db.Decimal(4, 3)
   runtime       Int
 
   watchList WatchListMovie[]
@@ -115,16 +115,16 @@ model Movie {
 }
 
 model Series {
-  id           Int      @id
+  id           Int     @id
   name         String
-  originalName String   @map("original_name")
+  originalName String  @map("original_name")
   overview     String
-  posterPath   String   @map("poster_path")
-  backdropPath String   @map("backdrop_path")
-  firstAirDate String   @map("first_air_date")
-  voteAverage  Decimal  @map("vote_average") @db.Decimal(4, 3)
+  posterPath   String  @map("poster_path")
+  backdropPath String  @map("backdrop_path")
+  firstAirDate String  @map("first_air_date")
+  voteAverage  Decimal @map("vote_average") @db.Decimal(4, 3)
   status       String
-  seasons      Json     @db.JsonB
+  seasons      Json    @db.JsonB
 
   watchList WatchListSeries[]
 
@@ -134,20 +134,22 @@ model Series {
 }
 
 model WatchListMovie {
-  userId  Int   @map("user_id")
-  user    User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  movieId Int   @map("movie_id")
-  movie   Movie @relation(fields: [movieId], references: [id])
+  userId     Int     @map("user_id")
+  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  movieId    Int     @map("movie_id")
+  movie      Movie   @relation(fields: [movieId], references: [id])
+  hasWatched Boolean @default(false) @map("has_watched")
 
   @@id([userId, movieId])
   @@map("watchlist_movie")
 }
 
 model WatchListSeries {
-  userId  Int    @map("user_id")
-  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  movieId Int    @map("movie_id")
-  series  Series @relation(fields: [movieId], references: [id])
+  userId     Int     @map("user_id")
+  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  movieId    Int     @map("movie_id")
+  series     Series  @relation(fields: [movieId], references: [id])
+  hasWatched Boolean @default(false) @map("has_watched")
 
   @@id([userId, movieId])
   @@map("watchlist_series")
