@@ -1,7 +1,7 @@
 import { query } from "express-validator";
 import Validation from "./Validation.ts";
 
-export interface QueryTypes {
+export interface SearchQuery {
     query: string;
     type: "movies" | "series";
     page: number
