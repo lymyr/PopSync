@@ -1,5 +1,5 @@
 import app from "../../../app.ts";
-import { afterEach, expect, test, vi, describe, beforeAll, afterAll, beforeEach } from "vitest"
+import { afterEach, expect, test, vi, describe, beforeEach } from "vitest"
 import request from "supertest"
 import { prisma } from "../../../lib/prisma.ts";
 process.loadEnvFile()

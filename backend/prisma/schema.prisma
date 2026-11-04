@@ -103,7 +103,7 @@ model Movie {
   overview      String
   posterPath    String   @map("poster_path")
   backdropPath  String   @map("backdrop_path")
-  releaseDate   DateTime @map("release_date")
+  releaseDate   String   @map("release_date")
   voteAverage   Decimal  @map("vote_average") @db.Decimal(4, 3)
   runtime       Int
 
@@ -121,10 +121,10 @@ model Series {
   overview     String
   posterPath   String   @map("poster_path")
   backdropPath String   @map("backdrop_path")
-  firstAirDate DateTime @map("first_air_date")
+  firstAirDate String   @map("first_air_date")
   voteAverage  Decimal  @map("vote_average") @db.Decimal(4, 3)
-  runtime      Int
-  seasons      Json
+  status       String
+  seasons      Json     @db.JsonB
 
   watchList WatchListSeries[]
 

@@ -1,11 +1,13 @@
-import type { Movie, Search, TV } from "tmdb-ts";
+import type { Movie, MovieDetails, Search, TV, TvShowDetails } from "tmdb-ts";
 import type { User as PrismaUserType } from "../generated/prisma/client.ts";
 
 declare global {
   namespace Express {
     interface Request {
       errorStatusCode?: number;
-      tmdbSearch: Search<TV> | Search<Movie>
+      tmdbSearch: Search<TV> | Search<Movie>;
+      movieDetails: MovieDetails;
+      seriesDetails: TvShowDetails;
     }
     interface Response {
       sendError(status: number, message: string): this;
