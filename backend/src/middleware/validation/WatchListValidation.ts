@@ -19,8 +19,19 @@ export default class WatchListValidation extends Validation {
                 throw new Error("movie doesn't exist in popsync db")
             }
         })
+
+    static seriesIdPayload = this.id().bail()
+        .custom(async (id, {req}) => {
+            const movie = await prisma.series.findUnique({where: {id}})
+            if (!movie) {
+                req.errorStatusCode = 404
+                throw new Error("tv series doesn't exist in popsync db")
+            }
+        })
+
     static statusPayload = body("hasWatched").exists().withMessage("missing hasWatched in payload")
         .isBoolean().withMessage("hasWatched should be a boolean").toBoolean()
     
     static moviePayload = [this.statusPayload, this.movieIdPayload]
+    static seriesPayload = [this.statusPayload, this.seriesIdPayload]
 }

@@ -147,11 +147,11 @@ model WatchListMovie {
 model WatchListSeries {
   userId     Int     @map("user_id")
   user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  movieId    Int     @map("movie_id")
-  series     Series  @relation(fields: [movieId], references: [id])
+  seriesId   Int     @map("series_id")
+  series     Series  @relation(fields: [seriesId], references: [id])
   hasWatched Boolean @default(false) @map("has_watched")
 
-  @@id([userId, movieId])
+  @@id([userId, seriesId])
   @@map("watchlist_series")
 }
 
