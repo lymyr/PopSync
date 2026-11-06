@@ -16,7 +16,7 @@ watchlistRouter.post("/movies",
 )
 
 watchlistRouter.put("/movies",
-    WatchListValidation.id(),
+    WatchListValidation.payload,
     throwerHelper,
     updateMovieWatchList
 )
@@ -34,7 +34,7 @@ watchlistRouter.post("/series",
 )
 
 watchlistRouter.put("/series",
-    WatchListValidation.id(),
+    WatchListValidation.payload,
     throwerHelper,
     updateSeriesWatchList
 )

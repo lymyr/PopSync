@@ -10,21 +10,23 @@ export async function getWatchList(req: Request, res: Response) {
         prisma.watchListMovie.findMany({
             where: { userId },
             select: {
-                movie: true
+                movie: true,
+                hasWatched: true
             }
         }),
         prisma.watchListSeries.findMany({
             where: { userId },
             select: {
-                series: true
+                series: true,
+                hasWatched: true
             }
         }),
     ])
 
     res.json({
         data: {
-            movies: userMovies.map(um => um.movie),
-            series: userSeries.map(us => us.series)
+            movies: userMovies.map(um => { return {...um.movie, hasWatched: um.hasWatched}}),
+            series: userSeries.map(us => { return {...us.series, hasWatched: us.hasWatched}})
         }
     })
 }
@@ -35,7 +37,8 @@ export async function addToMovieWatchList(req: Request<{}, {}, BodyPayload>, res
         data: {
             userId,
             movieId: req.body.id,
-            hasWatched: req.body.hasWatched
+            hasWatched: req.body.hasWatched,
+            rating: req.body.rating
         }
     })
     res.sendStatus(201)
@@ -51,15 +54,17 @@ export async function updateMovieWatchList(req: Request<{}, {}, BodyPayload>, re
             }
         },
         data: {
-            hasWatched: req.body.hasWatched
+            hasWatched: req.body.hasWatched,
+            rating: req.body.rating
         }
     })
 
     res.sendStatus(200)
 }
 
-export async function deleteMovieWatchList(req: Request<{}, {}, Omit<BodyPayload, "hasWatched">>, res: Response) {
+export async function deleteMovieWatchList(req: Request<{}, {}, Omit<Omit<BodyPayload, "hasWatched">, "rating">>, res: Response) {
     const userId = req.user?.id as number
+
     await prisma.watchListMovie.delete({
         where: {
             userId_movieId: {
@@ -86,6 +91,7 @@ export async function addToSeriesWatchList(req: Request<{}, {}, BodyPayload>, re
 
 export async function updateSeriesWatchList(req: Request<{}, {}, BodyPayload>, res: Response) {
     const userId = req.user?.id as number
+    
     await prisma.watchListSeries.update({
         where: {
             userId_seriesId: {
@@ -94,14 +100,15 @@ export async function updateSeriesWatchList(req: Request<{}, {}, BodyPayload>, r
             }
         },
         data: {
-            hasWatched: req.body.hasWatched
+            hasWatched: req.body.hasWatched,
+            rating: req.body.rating
         }
     })
 
     res.sendStatus(200)
 }
 
-export async function deleteSeriesWatchList(req: Request<{}, {}, Omit<BodyPayload, "hasWatched">>, res: Response) {
+export async function deleteSeriesWatchList(req: Request<{}, {}, Omit<Omit<BodyPayload, "hasWatched">, "rating">>, res: Response) {
     const userId = req.user?.id as number
     await prisma.watchListSeries.delete({
         where: {

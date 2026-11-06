@@ -139,6 +139,7 @@ model WatchListMovie {
   movieId    Int     @map("movie_id")
   movie      Movie   @relation(fields: [movieId], references: [id])
   hasWatched Boolean @default(false) @map("has_watched")
+  rating     Int?
 
   @@id([userId, movieId])
   @@map("watchlist_movie")
@@ -150,6 +151,7 @@ model WatchListSeries {
   seriesId   Int     @map("series_id")
   series     Series  @relation(fields: [seriesId], references: [id])
   hasWatched Boolean @default(false) @map("has_watched")
+  rating     Int?
 
   @@id([userId, seriesId])
   @@map("watchlist_series")
