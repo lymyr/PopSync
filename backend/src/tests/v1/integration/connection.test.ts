@@ -3,6 +3,7 @@ import { prisma } from "../../../lib/prisma.ts";
 import type { ConnectionStatus } from "../../../../generated/prisma/client.ts";
 import type { TestUser } from "../../utils/userGeneration.ts";
 import { testUserGen, randomUserGen } from "../../utils/userGeneration.ts";
+import generateMockId from "../../utils/generateMockId.ts";
 
 let users: Awaited<ReturnType<typeof testUserGen>>
 let user1: TestUser;
@@ -67,13 +68,8 @@ describe("adding connections", () => {
     })
 
     test("user adding 'id' that doesn't exist", async () => {
-        // paranoid lmao
-        let schizoId = -1;
-        do {
-            schizoId += 1
-        } while (schizoId == user2.details.id && schizoId == user1.details.id)
-
-        const res = await handleConnection(user1, schizoId, "accept")
+        const id = generateMockId([user1.details.id, user2.details.id])
+        const res = await handleConnection(user1, id, "accept")
         expect(res.status).toBe(404)
     })
 
@@ -110,13 +106,8 @@ describe("updating/accepting connections", () => {
     })
 
     test("user with 'id' doesn't exist", async () => {
-        // paranoid lmao
-        let schizoId = -1;
-        do {
-            schizoId += 1
-        } while (schizoId == user2.details.id && schizoId == user1.details.id)
-
-        const res = await handleConnection(user1, schizoId, "accept")
+        const id = generateMockId([user1.details.id, user2.details.id])
+        const res = await handleConnection(user1, id, "accept")
         expect(res.status).toBe(404)
     })
 })

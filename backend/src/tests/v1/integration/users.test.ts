@@ -1,9 +1,9 @@
 import { describe, test, expect, afterAll, beforeAll } from "vitest";
 import { prisma } from "../../../lib/prisma.ts";
-import type { User } from "../../../../generated/prisma/client.ts";
 import request from "supertest"
 import app from "../../../app.ts";
 import { testUserGen, type TestUser } from "../../utils/userGeneration.ts";
+import generateMockId from "../../utils/generateMockId.ts";
 
 let loggedUser: TestUser;
 beforeAll(async () => {
@@ -15,7 +15,6 @@ afterAll(async () => {
 })
 
 describe("search users", async () => {
-    let users: User[];
     beforeAll(async () => {
         const usernames = [
             "ABC", "CBA", "Ant", "ant324", "bart", "ram", "tart", 
@@ -24,7 +23,7 @@ describe("search users", async () => {
             "zen", "ZeeBruh", "Zuck", "ZeeZow", "zzzz",
             // doesn't have "a"
         ]
-        users = await prisma.user.createManyAndReturn({
+        await prisma.user.createManyAndReturn({
             data: usernames.map((u) => {
                 return {
                     username: u,
@@ -74,21 +73,7 @@ describe("search users", async () => {
             expect(res.status).toBe(400)
         })
         test("user with lastId doesn't exist", async () => {
-            let id = 0;
-            let hasDuplicates = false
-            // just to be paranoid lol
-            do {
-                hasDuplicates = false
-                for (let i = 0; i < users.length; i++) {
-                    if (users[i]?.id == id) {
-                        hasDuplicates = true
-                        id += 1
-                        break;
-                    }
-                }
-            } while (hasDuplicates)
-
-            
+            const id = generateMockId([0])
             const res = await searchUser("a", id.toString())
             expect(res.status).toBe(404)
         })
