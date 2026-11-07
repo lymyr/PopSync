@@ -8,6 +8,9 @@ declare global {
       tmdbSearch: Search<TV> | Search<Movie>;
       movieDetails: MovieDetails;
       seriesDetails: TvShowDetails;
+      updateRating?: 
+        { seriesId: undefined | null; movieId: number } | 
+        { seriesId: number; movieId: undefined | null };
     }
     interface Response {
       sendError(status: number, message: string): this;

@@ -64,12 +64,26 @@ model Review {
   isPublic    Boolean  @default(true) @map("is_public")
   dateAdded   DateTime @default(now()) @map("date_added")
   dateUpdated DateTime @updatedAt @map("date_updated")
+  rating      Int
+
+  /**
+   * NOTE:
+   * can denormalize title/name of movie/series but
+   * there is a chance that tmdb updates posters which
+   * results in 404 when client fetches images
+   */
+  movieId  Int?    @map("movie_id")
+  seriesId Int?    @map("series_id")
+  movie    Movie?  @relation(fields: [movieId], references: [id])
+  series   Series? @relation(fields: [seriesId], references: [id])
 
   commentCount Int       @default(0) @map("comment_count")
   comments     Comment[]
   likeCount    Int       @default(0) @map("like_count")
   likes        Like[]
 
+  @@unique([authorId, movieId])
+  @@unique([authorId, seriesId])
   @@map("review")
 }
 
@@ -107,6 +121,8 @@ model Movie {
   voteAverage   Decimal @map("vote_average") @db.Decimal(4, 3)
   runtime       Int
 
+  reviews Review[]
+
   watchList WatchListMovie[]
 
   watchGroup WatchGroup[]
@@ -126,6 +142,8 @@ model Series {
   status       String
   seasons      Json    @db.JsonB
 
+  reviews Review[]
+
   watchList WatchListSeries[]
 
   watchGroup WatchGroup[]
@@ -141,6 +159,9 @@ model WatchListMovie {
   hasWatched Boolean @default(false) @map("has_watched")
   rating     Int?
 
+  dateAdded   DateTime @default(now()) @map("date_added")
+  dateUpdated DateTime @updatedAt @map("date_updated")
+
   @@id([userId, movieId])
   @@map("watchlist_movie")
 }
@@ -152,6 +173,9 @@ model WatchListSeries {
   series     Series  @relation(fields: [seriesId], references: [id])
   hasWatched Boolean @default(false) @map("has_watched")
   rating     Int?
+
+  dateAdded   DateTime @default(now()) @map("date_added")
+  dateUpdated DateTime @updatedAt @map("date_updated")
 
   @@id([userId, seriesId])
   @@map("watchlist_series")
