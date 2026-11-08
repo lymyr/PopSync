@@ -21,6 +21,7 @@ beforeAll(async () => {
 afterAll(async () => {
     await Promise.all([
         prisma.user.deleteMany(),
+        prisma.session.deleteMany(),
         prisma.movie.deleteMany(),
         prisma.series.deleteMany()
     ])
@@ -266,3 +267,6 @@ describe("movies", () => {
     })
     
 })
+
+test.todo("user deletes account, soft deletes review")
+test.todo("user deletes review, soft deletes review")

@@ -5,31 +5,36 @@ import type { PostReviewBody, UpdateReviewBody } from "../validation/ReviewValid
 export default async function watchlistRatingSideEffectService(req: Request<{}, {}, PostReviewBody | UpdateReviewBody>, res: Response, next: NextFunction) {
     const userId = req.user?.id as number
 
-    if (req.updateRating) {
-        if (req.updateRating.movieId)
+    if (req.review?.rating !== req.body.rating || req.wlSeries || req.wlMovie) {
+        if (req.review?.movieId || req.wlMovie) {
+            const movieId = req.review?.movieId || req.wlMovie?.movieId as number
             await prisma.watchListMovie.update({
                 where: {
                     userId_movieId: {
                         userId,
-                        movieId: req.updateRating.movieId
+                        movieId
                     }
                 },
                 data: {
                     rating: req.body.rating
                 }
             })
-        else if (req.updateRating.seriesId)
+        }
+        else if (req.review?.seriesId || req.wlSeries) {
+            const seriesId = req.review?.seriesId || req.wlSeries?.seriesId as number
             await prisma.watchListSeries.update({
                 where: {
                     userId_seriesId: {
                         userId,
-                        seriesId: req.updateRating.seriesId
+                        seriesId
                     }
                 },
                 data: {
                     rating: req.body.rating
                 }
             })
+        }
+            
     }
     next()
 }
