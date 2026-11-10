@@ -315,7 +315,3 @@ describe("comments", () => {
         })
     })
 })
-
-
-test.todo("user deletes account, deletes like and decrements likeCount")
-test.todo("user deletes account, soft deletes comment account name")

@@ -1,21 +1,18 @@
-import { describe, test, expect, afterAll, beforeAll } from "vitest";
+import { describe, test, expect, afterAll, beforeAll, vi, beforeEach } from "vitest";
 import { prisma } from "../../../lib/prisma.ts";
 import request from "supertest"
 import app from "../../../app.ts";
 import { testUserGen, type TestUser } from "../../utils/userGeneration.ts";
 import generateMockId from "../../utils/generateMockId.ts";
-
-let loggedUser: TestUser;
-beforeAll(async () => {
-    loggedUser = (await testUserGen(1, "kakarot"))[0] as TestUser
-})
-
-afterAll(async () => {
-    await Promise.all([prisma.user.deleteMany(), prisma.session.deleteMany()])
-})
+import tmdb from "../../../lib/tmdb.ts";
+import TmdbMockPayloads from "../../mocks/TmdbMockPayloads.ts";
+import type { Response } from "supertest";
 
 describe("search users", async () => {
+    let loggedUser: TestUser;
+
     beforeAll(async () => {
+        loggedUser = (await testUserGen(1, "kakarot"))[0] as TestUser
         const usernames = [
             "ABC", "CBA", "Ant", "ant324", "bart", "ram", "tart", 
             "cart", "stark", "fart", "part", "larp", "carp", "kars",
@@ -35,7 +32,7 @@ describe("search users", async () => {
     })
 
     afterAll(async () => {
-        await prisma.user.deleteMany()
+        await Promise.all([prisma.user.deleteMany(), prisma.session.deleteMany()])
     })
 
     async function searchUser(username: string, lastId?: string) {
@@ -77,5 +74,93 @@ describe("search users", async () => {
             const res = await searchUser("a", id.toString())
             expect(res.status).toBe(404)
         })
+    })
+})
+
+describe("account deletion", () => {
+    let undeletedUser: TestUser
+    let undeletedReview: Response
+    beforeAll(async () => {
+        undeletedUser = (await testUserGen(1, "undeleted"))[0] as TestUser
+        vi.spyOn(Object.getPrototypeOf(tmdb.movies), "details").mockResolvedValue(TmdbMockPayloads.movieDetails)
+        await undeletedUser.agent.get(`/v1/media/movies?id=${TmdbMockPayloads.movieDetails.id}`)
+        await undeletedUser.agent.post("/v1/watchlist/movies")
+            .send({
+                id: TmdbMockPayloads.movieDetails.id,
+                hasWatched: true,
+                rating: "7"
+            })
+        undeletedReview = await undeletedUser.agent.post(`/v1/reviews`).send({
+            movieId: TmdbMockPayloads.movieDetails.id,
+            seriesId: null,
+            content: "undeleted review",
+            rating: "7",
+            isPublic: true
+        })
+        await undeletedUser.agent.post(`/v1/reviews/${undeletedReview.body.data.id}/likes`)
+        await undeletedUser.agent.post(`/v1/reviews/${undeletedReview.body.data.id}/comments`)
+            .send({content: "hello"})
+    })
+
+    afterAll(async () => {
+        await prisma.$transaction([
+            prisma.review.deleteMany(),
+            prisma.watchListMovie.deleteMany(),
+            prisma.movie.deleteMany()
+        ])
+        await Promise.all([
+            prisma.user.deleteMany(), 
+            prisma.session.deleteMany(),
+            prisma.series.deleteMany()
+        ])
+    })
+
+    let user: TestUser
+    beforeEach(async () => {
+        user = (await testUserGen(1))[0] as TestUser
+    })
+
+    test("success", async () => {
+        await user.agent.delete(`/v1/users`)
+        const prismaUser = await prisma.user.findFirst({ where: {id: user.details.id }})
+        expect(prismaUser).toBeNull()
+    })
+
+    test("unauth deletes", async () => {
+        const res = await request(app).delete(`/v1/users`)
+        expect(res.status).toBe(401)
+        await prisma.user.delete({where: {id: user.details.id }})
+    })
+
+    test("deletes like and decrements likeCount", async () => {
+        const likeRes = await user.agent.post(`/v1/reviews/${undeletedReview.body.data.id}/likes`)
+        expect(likeRes.status).toBe(201)
+        await user.agent.delete(`/v1/users`)
+        const updatedReview = await prisma.review.findFirst({where: {id: undeletedReview.body.data.id}})
+        expect(updatedReview?.likeCount).toBe(1)
+    })
+
+    test("soft deletes comment if it has replies and deletes if no reply, decrements commentCount", async () => {
+        const commentsRes = await Promise.all([
+            user.agent.post(`/v1/reviews/${undeletedReview.body.data.id}/comments`)
+                .send({content: "good review"}),
+            user.agent.post(`/v1/reviews/${undeletedReview.body.data.id}/comments`)
+                .send({content: "no reply"}),
+        ])
+        await undeletedUser.agent.post(`/v1/reviews/${undeletedReview.body.data.id}/comments/${commentsRes[0].body.data.id}`)
+            .send({content: "thanks"})
+        
+        await user.agent.delete(`/v1/users`)
+        const updatedReview = await prisma.review.findFirst({where: {id: undeletedReview.body.data.id}, include: {comments: true}})
+        expect(updatedReview?.commentCount).toBe(2)
+        expect(updatedReview?.comments.length).toBe(3)
+
+        await Promise.all([
+            prisma.comment.deleteMany(),
+            prisma.review.update({ 
+                where: {id: undeletedReview.body.data.id },
+                data: { commentCount: 0}
+            }),
+        ])
     })
 })

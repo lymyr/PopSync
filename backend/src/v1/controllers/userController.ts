@@ -60,3 +60,76 @@ export async function register(req:Request<{}, {}, Register>, res:Response) {
 export async function login(req:Request, res:Response) {
     res.sendStatus(200)
 }
+
+export async function deleteAccount(req:Request, res:Response) {
+    const id = req.user?.id as number
+    await prisma.$transaction(async (tx) => {
+        const reviewsThatUserLiked = (await tx.like.findMany({where: {userId: id }})).map(l => l.reviewId)
+        const reviewsThatUserCommented = (await tx.comment.findMany({where: {authorId: id}})).map(l => l.reviewId)
+
+        const commentTask = []
+        const commentNoReplyMap = new Map()
+
+        for (const id of reviewsThatUserCommented) {
+            commentNoReplyMap.set(id, commentNoReplyMap.get(id) ? commentNoReplyMap.get(id) + 1 : 1)
+        }
+        
+        for (const reviewId of commentNoReplyMap.keys()) {
+            commentTask.push(prisma.review.update({
+                where: {id: reviewId},
+                data: { commentCount: {decrement: commentNoReplyMap.get(reviewId)}}
+            }))
+        }
+
+        await Promise.all([
+            ...commentTask,
+            tx.like.deleteMany({where: {userId: id}}),
+            tx.review.updateMany({ 
+                where: {
+                    id: { in: reviewsThatUserLiked }
+                },
+                data: {
+                    likeCount: {
+                        decrement: 1
+                    }
+                }
+            }),
+            // note: it's possible to have nested "[deleted comment]"
+            tx.comment.updateMany({
+                where: {
+                    AND: [
+                        {authorId: id},
+                        {
+                            replies: {
+                                every: {
+                                    parentComment: {is: null}
+                                }
+                            }
+                        }
+                    ]
+                },
+                data: {
+                    authorId: null,
+                    content: "[deleted comment]"
+                }
+            }),
+            tx.comment.deleteMany({
+                where: {
+                    AND: [
+                        {authorId: id},
+                        {
+                            replies: {
+                                every: {
+                                    parentComment: {isNot: null}
+                                }
+                            }
+                        }
+                    ]
+                }
+            })
+        ])
+        await tx.user.delete({ where: {id}})
+    })
+
+    res.sendStatus(200)
+}

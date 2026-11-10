@@ -220,6 +220,10 @@ describe("movies", () => {
         expect(watchlist?.rating).toBe(10)
     })
 
+    test.todo("delete review")
+    test.todo("get review and its comments")
+    test.todo("get only comments of review")
+
     describe("fails", () => {
         test("reviewing the same media", async () => {
             const res = await Promise.all([
@@ -267,6 +271,3 @@ describe("movies", () => {
     })
     
 })
-
-test.todo("user deletes account, soft deletes review")
-test.todo("user deletes review, soft deletes review")

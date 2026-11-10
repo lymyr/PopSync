@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getUsers, login, register } from "../controllers/userController.ts";
+import { deleteAccount, getUsers, login, register } from "../controllers/userController.ts";
 import { UserValidation } from "../../middleware/validation/UserValidation.ts";
 import { throwerHelper } from "../../middleware/validation/Validation.ts";
 import passport from "../../lib/passport.ts";
@@ -26,6 +26,10 @@ userRouter.get("/",
     SearchQueryValidation.searchUser,
     throwerHelper<{}, {}, {}, SearchQuery>,
     getUsers
+)
+
+userRouter.delete("/",
+    deleteAccount
 )
 
 export default userRouter

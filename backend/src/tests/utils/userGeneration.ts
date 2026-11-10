@@ -21,7 +21,6 @@ export async function testUserGen(userAmount: number = 2, customUsername?: strin
     const createUserPayloads = []
     for (let i = 0; i < userAmount; i++) {
         const payload = {
-            id: i,
             username: i == 0 && customUsername ? customUsername : `user${i}`,
             password: "alksdn123",
             pfpPath: "/path"
