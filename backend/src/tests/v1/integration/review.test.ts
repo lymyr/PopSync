@@ -220,10 +220,6 @@ describe("movies", () => {
         expect(watchlist?.rating).toBe(10)
     })
 
-    test.todo("delete review")
-    test.todo("get review and its comments")
-    test.todo("get only comments of review")
-
     describe("fails", () => {
         test("reviewing the same media", async () => {
             const res = await Promise.all([
@@ -270,4 +266,104 @@ describe("movies", () => {
         })
     })
     
+})
+
+describe("read and deletes", () => {
+    let otherUser: TestUser
+    beforeAll(async () => {
+        await user.agent.post(`/v1/watchlist/series`).send({
+            id: TmdbMockPayloads.seriesDetails.id,
+            hasWatched: false,
+            rating: "10"
+        })
+        otherUser = (await testUserGen(1, "otherDude"))[0] as TestUser
+    })
+
+    afterAll(async () => {
+        await prisma.watchListSeries.deleteMany()
+    })
+
+    afterEach(async () => {
+        await prisma.review.deleteMany()
+    })
+
+    test("delete review", async () => {
+        const reviewRes = await user.agent.post("/v1/reviews")
+            .send(payload(
+                null,
+                TmdbMockPayloads.seriesDetails.id,
+                "great",
+                "9",
+                true
+            ))
+        const res = await user.agent.delete(`/v1/reviews/${reviewRes.body.data.id}`)
+        expect(res.status).toBe(200)
+        const prismaRes = await prisma.review.findFirst({where: {id: reviewRes.body.data.id }})
+        expect(prismaRes).toBeNull()
+    })
+
+    test("unauthorized delete", async () => {
+        const reviewRes = await user.agent.post("/v1/reviews")
+            .send(payload(
+                null,
+                TmdbMockPayloads.seriesDetails.id,
+                "great",
+                "9",
+                true
+            ))
+        const res = await otherUser.agent.delete(`/v1/reviews/${reviewRes.body.data.id}`)
+        expect(res.status).toBe(401)
+        const prismaRes = await prisma.review.findFirst({where: {id: reviewRes.body.data.id }})
+        expect(prismaRes).not.toBeNull()
+    })
+    
+    test("get review and its upto 3 depth comments", async () => {
+        const reviewRes = await user.agent.post("/v1/reviews")
+            .send(payload(
+                null,
+                TmdbMockPayloads.seriesDetails.id,
+                "great",
+                "9",
+                true
+            ))
+        const reviewId = reviewRes.body.data.id as number
+        
+        await Promise.all([
+            user.agent.post(`/v1/reviews/${reviewId}/comments`).send({content: "cool"}),
+            user.agent.post(`/v1/reviews/${reviewId}/comments`).send({content: "cool"})
+        ])
+
+        const rootId = (await user.agent.post(`/v1/reviews/${reviewId}/comments`).send({content: "root"})).body.data.id
+        const depth2Id = (await user.agent.post(`/v1/reviews/${reviewId}/comments/${rootId}`).send({content: "depth 2"})).body.data.id
+        const depth3Id = (await user.agent.post(`/v1/reviews/${reviewId}/comments/${depth2Id}`).send({content: "depth 3"})).body.data.id
+        await user.agent.post(`/v1/reviews/${reviewId}/comments/${depth3Id}`).send({content: "depth 4"})
+
+        const res = await user.agent.get(`/v1/reviews/${reviewId}`)
+        expect(res.status).toBe(200)
+        expect(res.body.data.comments[2].replies[0].replies[0].replies).toBeUndefined()
+
+        const commentCount = await prisma.comment.count({ where: {reviewId}})
+        expect(commentCount).toBe(6)
+    })
+
+    test("get comments of review upto 3 depth", async () => {
+        const reviewRes = await user.agent.post("/v1/reviews")
+            .send(payload(
+                null,
+                TmdbMockPayloads.seriesDetails.id,
+                "great",
+                "9",
+                true
+            ))
+        const reviewId = reviewRes.body.data.id as number
+        const rootId = (await user.agent.post(`/v1/reviews/${reviewId}/comments`).send({content: "cool"})).body.data.id
+        const depth2Id = (await user.agent.post(`/v1/reviews/${reviewId}/comments/${rootId}`).send({content: "depth 2"})).body.data.id
+        const depth3Id = (await user.agent.post(`/v1/reviews/${reviewId}/comments/${depth2Id}`).send({content: "depth 3"})).body.data.id
+        await user.agent.post(`/v1/reviews/${reviewId}/comments/${depth3Id}`).send({content: "depth 4"})
+
+        const res = await user.agent.get(`/v1/reviews/${reviewId}/comments`)
+        expect(res.status).toBe(200)
+        expect(res.body.data[0].content).toBe("cool")
+        expect(res.body.data[0].replies[0].replies[0].replies).toBeUndefined()
+    })
 })

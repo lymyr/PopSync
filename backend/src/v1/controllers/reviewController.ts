@@ -37,6 +37,88 @@ export async function updateReview(req: Request<{id: number}, {}, UpdateReviewBo
     })
 }
 
+export async function deleteReview(req: Request<{id: number}, {}, UpdateReviewBody>, res: Response) {
+    const authorId = req.user?.id as number
+    await prisma.review.delete({ where: {id: req.params.id, authorId} })
+    res.sendStatus(200)
+}
+
+export async function getReview(req: Request<{id: number}>, res: Response) {
+    const review = await prisma.review.findUnique({
+        where: {id: req.params.id},
+        select: {
+            id: true,
+            author: {
+              select: {
+                username: true
+              }  
+            },
+            dateAdded: true,
+            dateUpdated: true,
+            content: true,
+            rating: true,
+            likeCount: true,
+            commentCount:true,
+            comments: {
+                where: {commentId: null},
+                select: {
+                    id: true,
+                    dateAdded: true,
+                    dateUpdated: true,
+                    content: true,
+                    replies: {
+                        select: {
+                            id: true,
+                            dateAdded: true,
+                            dateUpdated: true,
+                            content: true,
+                            replies: {
+                                select: {
+                                    id: true,
+                                    dateAdded: true,
+                                    dateUpdated: true,
+                                    content: true,
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    })
+    res.json({
+        data: review
+    })
+}
+
+export async function getComments(req: Request<{id: number}>, res: Response) {
+    const comments = await prisma.comment.findMany({
+        where: {reviewId: req.params.id, commentId: null},
+        select: {
+            id: true,
+            dateAdded: true,
+            dateUpdated: true,
+            content: true,
+            replies: {
+                select: {
+                    id: true,
+                    dateAdded: true,
+                    dateUpdated: true,
+                    content: true,
+                    replies: {
+                        select: {
+                            id: true,
+                            dateAdded: true,
+                            dateUpdated: true,
+                            content: true,
+                        }
+                    }
+                }
+            }
+        }
+    })
+    res.json({data: comments})
+}
 
 export async function likeReview(req: Request<{id: number}>, res: Response) {
     const userId = req.user?.id as number

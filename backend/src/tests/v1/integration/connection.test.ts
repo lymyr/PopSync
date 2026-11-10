@@ -45,6 +45,14 @@ describe("adding connections", () => {
         await prisma.connection.deleteMany()
     })
 
+    test("friend request fail because connection request already exists", async () => {
+        await handleConnection(user1, user2, "add")
+        const res2 = await handleConnection(user2, user1, "add")
+        const connections = await prisma.connection.findMany()
+        expect(res2.status).toBe(400)
+        expect(connections.length).toBe(1)
+    })
+
     test("requests another user as connection", async () => {
         const res = await handleConnection(user1, user2, "add")
         const user = await prisma.user.findUnique({ where: {id: user1.details.id}, include: { sentConnection: true }})

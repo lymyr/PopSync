@@ -139,6 +139,12 @@ export default class ReviewValidation extends Validation {
             }
         })
 
+    static isAuthor = this.id().custom((id, meta) => {
+        const req = meta.req as Request
+        req.errorStatusCode = 401
+        return req.user?.id === req.review?.authorId
+    }).withMessage("please do not delete other user's review")
+
     static commentValidation = [
         this.content,
         this.id(),

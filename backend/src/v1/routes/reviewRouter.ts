@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { addComment, deleteComment, likeReview, postReview, unlikeReview, updateReview } from "../controllers/reviewController.ts";
+import { addComment, deleteComment, deleteReview, getComments, getReview, likeReview, postReview, unlikeReview, updateReview } from "../controllers/reviewController.ts";
 import isAuth from "../../middleware/auth/isAuth.ts";
 import ReviewValidation from "../../middleware/validation/ReviewValidation.ts";
 import watchlistRatingSideEffectService from "../../middleware/services/watchlistRatingSideEffectService.ts";
@@ -17,11 +17,23 @@ reviewRouter.post("/",
     handleUniqueReview,
 )
 
+reviewRouter.get("/:id",
+    ReviewValidation.id(),
+    throwerHelper,
+    getReview
+)
+
 reviewRouter.put("/:id",
     ReviewValidation.update,
     throwerHelper,
     watchlistRatingSideEffectService,
     updateReview
+)
+
+reviewRouter.delete("/:id",
+    ReviewValidation.isAuthor,
+    throwerHelper,
+    deleteReview
 )
 
 reviewRouter.post("/:id/likes",
@@ -34,6 +46,12 @@ reviewRouter.delete("/:id/likes",
     ReviewValidation.unlikeValidation,
     throwerHelper,
     unlikeReview
+)
+
+reviewRouter.get("/:id/comments",
+    ReviewValidation.id(),
+    throwerHelper,
+    getComments
 )
 
 reviewRouter.post("/:id/comments{/:commentId}",
