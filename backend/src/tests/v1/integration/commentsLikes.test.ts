@@ -234,7 +234,16 @@ describe("comments", () => {
         expect(res?.status).toBe(400)
     })
 
-    test.todo("update comment")
+    test("update comment", async () => {
+        const createRes = await users[0]?.agent.post(`/v1/reviews/${review.id}/comments`).send({
+            content: "typo"
+        })
+        const updateRes = await users[0]?.agent.put(`/v1/reviews/${review.id}/comments/${createRes?.body.data.id}`).send({
+            content: "fixed typo"
+        })
+        expect(updateRes?.status).toBe(200)
+        expect(updateRes?.body.data.content).toBe("fixed typo")
+    })
 
     // crucial because authorId can be null
     test("unauthorized check ", async () => {
@@ -315,6 +324,17 @@ describe("comments", () => {
             const unauthDel = await users[1]?.agent.delete(`/v1/reviews/${review.id}/comments/${commentRes?.body.data.id}`)
             expect(unauthDel?.status).toBe(401)
         })
-        test.todo("updating comment of another user")
+        test("updating comment of another user", async () => {
+            if (users.length < 2)
+                throw new Error("this test requires at least 2 users")
+
+            const createRes = await users[0]?.agent.post(`/v1/reviews/${review.id}/comments`).send({
+                content: "typo"
+            })
+            const updateRes = await users[1]?.agent.put(`/v1/reviews/${review.id}/comments/${createRes?.body.data.id}`).send({
+                content: "fixed typo"
+            })
+            expect(updateRes?.status).toBe(401)
+        })
     })
 })

@@ -1,6 +1,6 @@
 import { prisma } from "../../lib/prisma.ts"
 import type { Request, Response } from "express"
-import type { CommentBody } from "../../middleware/validation/ReviewValidation.ts"
+import type { CommentBody } from "../../middleware/validation/CommentValidation.ts"
 import type { PrismaPromise } from "../../../generated/prisma/internal/prismaNamespace.ts"
 import nestedCommentQuery from "../../utils/nestedCommentQuery.ts"
 
@@ -64,4 +64,13 @@ export async function deleteComment(req: Request<{id: number, commentId: number 
     await prisma.$transaction(transactionTasks)
 
     res.sendStatus(200)
+}
+
+export async function updateComment(req: Request<{id: string, commentId: number}, {}, CommentBody>, res: Response) {
+    const comment = await prisma.comment.update({
+        where: {id: req.params.commentId},
+        data: {content: req.body.content}
+    })
+
+    res.json({data: comment})
 }

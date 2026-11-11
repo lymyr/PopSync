@@ -3,6 +3,11 @@ import Validation from "./Validation.ts";
 import type { Request } from "express";
 import { prisma } from "../../lib/prisma.ts";
 
+export interface CommentBody {
+    content: string;
+    commentId?: number
+}
+
 export default class commentValidation extends Validation {
     static content = body("content").isString().withMessage("expected 'content' to be string").trim()
         .isLength({min: 1, max: 3000}).withMessage("content should be 1 - 3000 characters")
@@ -28,7 +33,7 @@ export default class commentValidation extends Validation {
                 throw new Error("the comment doesn't exist")
             }
 
-            if (req.method == "DELETE" && comment?.authorId !== req.user?.id) {
+            if ((req.method == "DELETE" || req.method == "PUT") && comment?.authorId !== req.user?.id) {
                 req.errorStatusCode = 401
                 throw new Error("please don't touch other people's comments")
             }

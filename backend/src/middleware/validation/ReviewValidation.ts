@@ -15,11 +15,6 @@ export interface UpdateReviewBody extends Omit<Omit<PostReviewBody, "movieId">, 
     id: number
 }
 
-export interface CommentBody {
-    content: string;
-    commentId?: number
-}
-
 export default class ReviewValidation extends Validation {
     static content = body("content").isString().withMessage("expected 'content' to be string").trim()
         .isLength({min: 1, max: 3000}).withMessage("content should be 1 - 3000 characters")
