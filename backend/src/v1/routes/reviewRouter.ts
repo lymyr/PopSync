@@ -1,10 +1,12 @@
 import { Router } from "express";
-import { addComment, deleteComment, deleteReview, getComments, getReview, likeReview, postReview, unlikeReview, updateReview } from "../controllers/reviewController.ts";
+import { deleteReview, getReview, postReview, updateReview } from "../controllers/reviewController.ts";
 import isAuth from "../../middleware/auth/isAuth.ts";
 import ReviewValidation from "../../middleware/validation/ReviewValidation.ts";
 import watchlistRatingSideEffectService from "../../middleware/services/watchlistRatingSideEffectService.ts";
 import { throwerHelper } from "../../middleware/validation/Validation.ts";
 import handleUniqueReview from "../../middleware/errorHandlers/handleUniqueReview.ts";
+import commentRouter from "./review-subroutes/commentRouter.ts";
+import likeRouter from "./review-subroutes/likeRouter.ts";
 
 const reviewRouter = Router()
 reviewRouter.use(isAuth)
@@ -36,34 +38,7 @@ reviewRouter.delete("/:id",
     deleteReview
 )
 
-reviewRouter.post("/:id/likes",
-    ReviewValidation.likeValidation,
-    throwerHelper,
-    likeReview
-)
-
-reviewRouter.delete("/:id/likes",
-    ReviewValidation.unlikeValidation,
-    throwerHelper,
-    unlikeReview
-)
-
-reviewRouter.get("/:id/comments",
-    ReviewValidation.id(),
-    throwerHelper,
-    getComments
-)
-
-reviewRouter.post("/:id/comments{/:commentId}",
-    ReviewValidation.commentValidation,
-    throwerHelper,
-    addComment
-)
-
-reviewRouter.delete("/:id/comments{/:commentId}",
-    ReviewValidation.commentValidation.slice(1),
-    throwerHelper,
-    deleteComment
-)
+reviewRouter.use("/:id/comments", commentRouter)
+reviewRouter.use("/:id/likes", likeRouter)
 
 export default reviewRouter

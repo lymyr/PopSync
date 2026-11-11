@@ -354,7 +354,7 @@ describe("series", () => {
 })
 
 
-test("returns all of user's watchlist", async () => {
+test.todo("returns all of user's watchlist ONLY IF connection or watchlist owner", async () => {
     await Promise.all([
         user.agent.get(`/v1/media/series?id=${TmdbMockPayloads.seriesDetails.id}`),
         user.agent.get(`/v1/media/movies?id=${TmdbMockPayloads.movieDetails.id}`),

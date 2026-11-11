@@ -89,65 +89,36 @@ export default class ReviewValidation extends Validation {
     static post = [this.movieId, this.seriesId, this.content, this.rating, this.isPublic]
     static update = [this.id(), this.content, this.rating, this.isPublic]
 
-    static likeValidation = this.id().bail().custom(async (reviewId, meta) => {
-        const req = meta.req as Request
-        const userId = req.user?.id as number
-        const hasLiked = await prisma.like.findFirst({
-            where: {
-                reviewId,
-                userId
-            }
-        })
-        if (hasLiked)
-            throw new Error("You already liked this review")
-    })
-
-    static unlikeValidation = this.id().bail().custom(async (reviewId, meta) => {
-        const req = meta.req as Request
-        const userId = req.user?.id as number
-        const hasLiked = await prisma.like.findFirst({
-            where: {
-                reviewId,
-                userId
-            }
-        })
-        
-        if (!hasLiked) {
-            req.errorStatusCode = 404
-            throw new Error("You haven't liked this review")
-        }
-    })
-
-
-    static commentId = param("commentId").if((id) => id !== undefined)
-        .isInt().withMessage("commentId must be an integer").toInt().bail()
-        .custom(async (id, meta) => {
-            const req = meta.req as Request<{id: number | string}>
-
-            let comment
-            if (req.method == "DELETE") {
-                comment = await prisma.comment.findFirst({ where: {id, reviewId: Number(req.params.id)}, include: { replies: true }})
-                if (comment && comment.replies.length > 0)
-                    req.softDelComment = true
-            }
-            else
-                comment = await prisma.comment.findFirst({ where: {id, reviewId: Number(req.params.id)}})
-
-            if (!comment) {
-                req.errorStatusCode = 404
-                throw new Error("the comment you're replying to doesn't exist")
-            }
-        })
-
     static isAuthor = this.id().custom((id, meta) => {
         const req = meta.req as Request
         req.errorStatusCode = 401
         return req.user?.id === req.review?.authorId
     }).withMessage("please do not delete other user's review")
 
-    static commentValidation = [
-        this.content,
-        this.id(),
-        this.commentId
-    ]
+    static canView = this.id().bail().custom(async (id, meta) => {
+        const req = meta.req as Request
+        const review = req.review as NonNullable<typeof req.review>
+        const userId = req.user?.id as number
+        const connection = await prisma.connection.findFirst({
+            where: {
+                OR: [
+                    {
+                        senderId: userId,
+                        receiverId: review.authorId,
+                        status: "accepted"
+                    },
+                    {
+                        senderId: review.authorId,
+                        receiverId: userId,
+                        status: "accepted"
+                    }
+                ]
+            }
+        })
+
+        if (!(connection && review.isPublic && review.authorId != userId)) {
+            req.errorStatusCode = 401
+            throw new Error("You are not allowed to view this review")
+        }
+    })
 }

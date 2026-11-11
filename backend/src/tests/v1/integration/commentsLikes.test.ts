@@ -247,6 +247,8 @@ describe("comments", () => {
         expect(res?.status).toBe(400)
     })
 
+    test.todo("update comment")
+
     // crucial because authorId can be null
     test("unauthorized check ", async () => {
         const res = await request(app).post(`/v1/reviews/${review.id}/comments`).send({
@@ -313,5 +315,10 @@ describe("comments", () => {
             const badDelete = await commenter?.agent.delete(`/v1/reviews/${unrelatedReview.id}/comments/${parentComment?.body.data.id}`)
             expect(badDelete?.status).toBe(404)
         })
+    })
+
+    describe("unauthorized logged in user", () => {
+        test.todo("deleting comment of another user", async () => {})
+        test.todo("updating comment of another user")
     })
 })
