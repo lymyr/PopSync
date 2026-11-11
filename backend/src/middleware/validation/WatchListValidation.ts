@@ -1,6 +1,7 @@
-import { body } from "express-validator";
+import { body, param } from "express-validator";
 import Validation from "./Validation.ts";
 import { prisma } from "../../lib/prisma.ts";
+import type { Request } from "express";
 
 export interface BodyPayload {
     id: number;
@@ -37,7 +38,45 @@ export default class WatchListValidation extends Validation {
     static statusPayload = body("hasWatched").exists().withMessage("missing hasWatched in payload")
         .isBoolean().withMessage("hasWatched should be a boolean").toBoolean()
     
-    static payload = [this.id(), this.rating]
-    static moviePayload = [this.statusPayload, this.rating, this.movieIdPayload]
-    static seriesPayload = [this.statusPayload, this.rating, this.seriesIdPayload]
+    static userId = () => param("userId").isInt().withMessage("userId must be an integer").toInt()
+    static isOwner = this.userId().bail().custom((userId, meta) => {
+        const req = meta.req as Request
+        if (userId !== req.user?.id) {
+            req.errorStatusCode = 401
+            return false
+        }
+        return true
+    }).withMessage("please do not touch other user's watchlist")
+
+    static canAccess = this.userId().bail().custom(async (id, meta) => {
+        const req = meta.req as Request
+        const userId = req.user?.id as number
+        if (id === req.user?.id)
+            return true
+        const connection = await prisma.connection.findFirst({
+            where: {
+                OR: [
+                    {
+                        senderId: userId,
+                        receiverId: id,
+                        status: "accepted"
+                    },
+                    {
+                        senderId: id,
+                        receiverId: userId,
+                        status: "accepted"
+                    }
+                ]
+            }
+        })
+        if (!connection) {
+            req.errorStatusCode = 401
+            throw new Error("you do not have access to this user's watchlist")
+        }
+    })
+
+    private static payload = [this.isOwner, this.rating, this.statusPayload]
+    static moviePayload = [...this.payload, this.movieIdPayload]
+    static seriesPayload = [...this.payload, this.seriesIdPayload]
+    static updatePayload = [...this.payload, this.id()]
 }

@@ -1,13 +1,15 @@
 import { Router } from "express";
-import isAuth from "../../../middleware/auth/isAuth.ts";
 import WatchListValidation from "../../../middleware/validation/WatchListValidation.ts";
 import {throwerHelper} from "../../../middleware/validation/Validation.ts";
 import { addToMovieWatchList, addToSeriesWatchList, deleteMovieWatchList, deleteSeriesWatchList, getWatchList, updateMovieWatchList, updateSeriesWatchList } from "../../controllers/watchlistController.ts";
 
-const watchlistRouter = Router()
-watchlistRouter.use(isAuth)
+const watchlistRouter = Router({mergeParams: true})
 
-watchlistRouter.get("/", getWatchList)
+watchlistRouter.get("/", 
+    WatchListValidation.canAccess,
+    throwerHelper,
+    getWatchList
+)
 
 watchlistRouter.post("/movies",
     WatchListValidation.moviePayload,
@@ -16,13 +18,16 @@ watchlistRouter.post("/movies",
 )
 
 watchlistRouter.put("/movies",
-    WatchListValidation.payload,
+    WatchListValidation.updatePayload,
     throwerHelper,
     updateMovieWatchList
 )
 
 watchlistRouter.delete("/movies",
-    WatchListValidation.id(),
+    [
+        WatchListValidation.isOwner,
+        WatchListValidation.id()
+    ],
     throwerHelper,
     deleteMovieWatchList
 )
@@ -34,13 +39,16 @@ watchlistRouter.post("/series",
 )
 
 watchlistRouter.put("/series",
-    WatchListValidation.payload,
+    WatchListValidation.updatePayload,
     throwerHelper,
     updateSeriesWatchList
 )
 
 watchlistRouter.delete("/series",
-    WatchListValidation.id(),
+    [
+        WatchListValidation.isOwner,
+        WatchListValidation.id()
+    ],
     throwerHelper,
     deleteSeriesWatchList
 )

@@ -2,31 +2,42 @@ import type { Request, Response } from "express";
 import { prisma } from "../../lib/prisma.ts";
 
 import type { BodyPayload } from "../../middleware/validation/WatchListValidation.ts";
-
+import type { WatchListMovie, WatchListSeries } from "../../../generated/prisma/client.ts";
 
 export async function getWatchList(req: Request, res: Response) {
     const userId = req.user?.id as number
+
+    type watchlist = WatchListMovie | WatchListSeries
+    interface WatchlistSelectTypes extends Partial<Record<keyof watchlist, boolean>> {}
+
+    const generalSelectQuery: WatchlistSelectTypes = {
+        hasWatched: true,
+        rating: true,
+        dateAdded: true,
+        dateUpdated: true,
+    }
+
     const [userMovies, userSeries] =  await Promise.all([
         prisma.watchListMovie.findMany({
             where: { userId },
             select: {
+                ...generalSelectQuery,
                 movie: true,
-                hasWatched: true
             }
         }),
         prisma.watchListSeries.findMany({
             where: { userId },
             select: {
+                ...generalSelectQuery,
                 series: true,
-                hasWatched: true
             }
         }),
     ])
 
     res.json({
         data: {
-            movies: userMovies.map(um => { return {...um.movie, hasWatched: um.hasWatched}}),
-            series: userSeries.map(us => { return {...us.series, hasWatched: us.hasWatched}})
+            movies: userMovies.map(um => { return {...um.movie, hasWatched: um.hasWatched, rating: um.rating}}),
+            series: userSeries.map(us => { return {...us.series, hasWatched: us.hasWatched, rating: us.rating}})
         }
     })
 }

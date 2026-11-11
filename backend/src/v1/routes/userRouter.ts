@@ -33,6 +33,6 @@ userRouter.delete("/",
     deleteAccount
 )
 
-userRouter.use("/:id/watchlist", watchlistRouter)
+userRouter.use("/:userId/watchlist", watchlistRouter)
 
 export default userRouter
