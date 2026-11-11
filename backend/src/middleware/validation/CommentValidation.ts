@@ -17,12 +17,6 @@ export default class commentValidation extends Validation {
             let comment
             if (req.method == "DELETE") {
                 comment = await prisma.comment.findFirst({ where: {id, reviewId: Number(req.params.id)}, include: { replies: true }})
-                
-                if (comment?.authorId !== req.user?.id) {
-                    req.errorStatusCode = 404
-                    throw new Error("please don't touch other people's comments")
-                }
-
                 if (comment && comment.replies.length > 0)
                     req.softDelComment = true
             }
@@ -32,6 +26,11 @@ export default class commentValidation extends Validation {
             if (!comment) {
                 req.errorStatusCode = 404
                 throw new Error("the comment doesn't exist")
+            }
+
+            if (req.method == "DELETE" && comment?.authorId !== req.user?.id) {
+                req.errorStatusCode = 401
+                throw new Error("please don't touch other people's comments")
             }
         })
 }

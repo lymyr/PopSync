@@ -5,20 +5,7 @@ import TmdbMockPayloads from "../../mocks/TmdbMockPayloads.ts";
 import tmdb from "../../../lib/tmdb.ts";
 import request from "supertest"
 import app from "../../../app.ts";
-
-interface Review {
-    id: number;
-    authorId: number;
-    content: string;
-    isPublic: boolean;
-    dateAdded: string;
-    dateUpdated: string;
-    rating: number;
-    movieId: number | null;
-    seriesId: number | null;
-    commentCount: number;
-    likeCount: number;
-}
+import type { Review } from "../../../../generated/prisma/client.ts";
 
 let users: TestUser[]
 let poster: TestUser
@@ -318,7 +305,16 @@ describe("comments", () => {
     })
 
     describe("unauthorized logged in user", () => {
-        test.todo("deleting comment of another user", async () => {})
+        test("deleting comment of another user", async () => {
+            if (users.length < 2)
+                throw new Error("this test requires at least 2 users")
+
+            const commentRes = await users[0]?.agent.post(`/v1/reviews/${review.id}/comments`)
+                .send({ content: "my comment" })
+            expect(commentRes?.status).toBe(201)
+            const unauthDel = await users[1]?.agent.delete(`/v1/reviews/${review.id}/comments/${commentRes?.body.data.id}`)
+            expect(unauthDel?.status).toBe(401)
+        })
         test.todo("updating comment of another user")
     })
 })
