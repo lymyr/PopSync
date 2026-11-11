@@ -6,17 +6,17 @@ import commentValidation from "../../../middleware/validation/CommentValidation.
 
 const commentRouter = Router({mergeParams: true})
 
+commentRouter.use(
+    ReviewValidation.canView(),
+    throwerHelper
+)
+
 commentRouter.get("/",
-    ReviewValidation.id(),
-    throwerHelper,
     getComments
 )
 
 commentRouter.post("/",
-    [
-        ReviewValidation.id(),
-        commentValidation.content,
-    ],
+    commentValidation.content,
     throwerHelper,
     addComment
 )

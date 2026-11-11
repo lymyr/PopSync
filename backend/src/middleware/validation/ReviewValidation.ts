@@ -81,19 +81,24 @@ export default class ReviewValidation extends Validation {
             req.review = review
         })
 
-    static post = [this.movieId, this.seriesId, this.content, this.rating, this.isPublic]
-    static update = [this.id(), this.content, this.rating, this.isPublic]
-
-    static isAuthor = this.id().custom((id, meta) => {
+    static isAuthor = this.id().bail().custom((_id, meta) => {
         const req = meta.req as Request
         req.errorStatusCode = 401
         return req.user?.id === req.review?.authorId
-    }).withMessage("please do not delete other user's review")
+    }).withMessage("please do not touch other user's review")
 
-    static canView = this.id().bail().custom(async (id, meta) => {
+    private static payload = [this.content, this.rating, this.isPublic]
+    static post = [...this.payload, this.movieId, this.seriesId]
+    static update = [...this.payload, this.isAuthor]
+
+    static canView = () => this.id().bail().custom(async (_id, meta) => {
         const req = meta.req as Request
         const review = req.review as NonNullable<typeof req.review>
         const userId = req.user?.id as number
+
+        if (review.authorId === userId || review.isPublic)
+            return true
+
         const connection = await prisma.connection.findFirst({
             where: {
                 OR: [
@@ -111,7 +116,7 @@ export default class ReviewValidation extends Validation {
             }
         })
 
-        if (!(connection && review.isPublic && review.authorId != userId)) {
+        if (!connection) {
             req.errorStatusCode = 401
             throw new Error("You are not allowed to view this review")
         }

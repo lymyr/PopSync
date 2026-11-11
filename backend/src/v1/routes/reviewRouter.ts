@@ -20,7 +20,7 @@ reviewRouter.post("/",
 )
 
 reviewRouter.get("/:id",
-    ReviewValidation.id(),
+    ReviewValidation.canView(),
     throwerHelper,
     getReview
 )

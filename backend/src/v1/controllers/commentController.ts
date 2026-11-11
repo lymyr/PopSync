@@ -4,21 +4,21 @@ import type { CommentBody } from "../../middleware/validation/CommentValidation.
 import type { PrismaPromise } from "../../../generated/prisma/internal/prismaNamespace.ts"
 import nestedCommentQuery from "../../utils/nestedCommentQuery.ts"
 
-export async function getComments(req: Request<{id: number}>, res: Response) {
+export async function getComments(req: Request<{id: string}>, res: Response) {
     const comments = await prisma.comment.findMany({
-        where: {reviewId: req.params.id, commentId: null},
+        where: {reviewId: Number(req.params.id), commentId: null},
         ...nestedCommentQuery
     })
     res.json({data: comments})
 }
 
-export async function addComment(req: Request<{id?: number, commentId?: number}, {}, CommentBody>, res: Response) {
+export async function addComment(req: Request<{id?: string, commentId?: number}, {}, CommentBody>, res: Response) {
     if (!(req.params.id || req.comment)) {
         throw new Error("req.params.id and req.params.commentId are both false")
     }
 
     const authorId = req.user?.id as number
-    const reviewId = req.comment?.reviewId || req.params.id as number
+    const reviewId = req.comment?.reviewId || Number(req.params.id) as number
 
     const prismaRes = await prisma.$transaction([
         prisma.comment.create({

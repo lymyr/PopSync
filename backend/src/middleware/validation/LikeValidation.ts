@@ -4,7 +4,7 @@ import Validation from "./Validation.ts";
 import ReviewValidation from "./ReviewValidation.ts";
 
 export default class LikeValidation extends Validation {
-    static like = ReviewValidation.id().bail().custom(async (reviewId, meta) => {
+    static like = ReviewValidation.canView().bail().custom(async (reviewId, meta) => {
         const req = meta.req as Request
         const userId = req.user?.id as number
         const hasLiked = await prisma.like.findFirst({
@@ -17,7 +17,7 @@ export default class LikeValidation extends Validation {
             throw new Error("You already liked this review")
     })
 
-    static unlike = ReviewValidation.id().bail().custom(async (reviewId, meta) => {
+    static unlike = ReviewValidation.canView().bail().custom(async (reviewId, meta) => {
         const req = meta.req as Request
         const userId = req.user?.id as number
         const hasLiked = await prisma.like.findFirst({

@@ -12,7 +12,7 @@ export async function postReview(req: Request<{}, {}, PostReviewBody>, res: Resp
             rating: req.body.rating,
             movieId: req.body.movieId,
             seriesId: req.body.seriesId,
-            isPublic: true
+            isPublic: req.body.isPublic
         }
     })
     res.status(201).json({

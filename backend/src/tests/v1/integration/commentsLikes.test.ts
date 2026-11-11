@@ -38,6 +38,9 @@ beforeAll(async () => {
     const res = await poster.agent.post(`/v1/reviews`).send(reviewPayload)
 
     review = res.body.data
+
+    await poster.agent.post(`/v1/connections/${users[0]?.details.id}`)
+        .then(() => users[0]?.agent.put(`/v1/connections/${poster.details.id}`))
 })
 
 afterEach(async () => {
@@ -119,6 +122,38 @@ describe("likes", () => {
         expect(res?.status).toBe(404)
         expect(currentReview?.likeCount).toBe(likers.length)
     })
+
+    describe("review is not public", () => {
+        beforeAll(async () => {
+            await prisma.review.update({where: {id: review.id}, data: {isPublic: false}})
+        })
+
+        afterAll(async () => {
+            await prisma.review.update({where: {id: review.id}, data: {isPublic: true}})
+        })
+
+        test("authorized likes", async () => {
+            const res = await Promise.all([
+                users[0]?.agent.post(`/v1/reviews/${review.id}/likes`),
+                users[1]?.agent.post(`/v1/reviews/${review.id}/likes`),
+            ])
+            expect(res[0]?.status).toBe(201)
+            expect(res[1]?.status).toBe(401)
+        })
+
+        test("authorized dislikes", async () => {
+            const res = await Promise.all([
+                users[0]?.agent.post(`/v1/reviews/${review.id}/likes`)
+                    .then(() => users[0]?.agent.delete(`/v1/reviews/${review.id}/likes`)),
+                users[1]?.agent.post(`/v1/reviews/${review.id}/likes`)
+                    .then(() => users[1]?.agent.delete(`/v1/reviews/${review.id}/likes`)),
+            ])
+
+            expect(res[0]?.status).toBe(200)
+            expect(res[1]?.status).toBe(401)
+        })
+    })
+    
 })
 
 describe("comments", () => {
@@ -335,6 +370,25 @@ describe("comments", () => {
                 content: "fixed typo"
             })
             expect(updateRes?.status).toBe(401)
+        })
+    })
+
+    describe("review is not public", () => {
+        beforeAll(async () => {
+            await prisma.review.update({where: {id: review.id}, data: {isPublic: false}})
+        })
+
+        afterAll(async () => {
+            await prisma.review.update({where: {id: review.id}, data: {isPublic: true}})
+        })
+
+         test("authorized comments", async () => {
+            const res = await Promise.all([
+                users[0]?.agent.post(`/v1/reviews/${review.id}/comments`).send({content: "hello"}),
+                users[1]?.agent.post(`/v1/reviews/${review.id}/likes`).send({content: "hello"}),
+            ])
+            expect(res[0]?.status).toBe(201)
+            expect(res[1]?.status).toBe(401)
         })
     })
 })
