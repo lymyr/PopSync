@@ -34,7 +34,7 @@ beforeAll(async () => {
     }
 
     await poster.agent.get(`/v1/media/movies?id=${movieId}`)
-    await poster.agent.post(`/v1/watchlist/movies`).send(watchlistPayload)
+    await poster.agent.post(`/v1/users/${poster.details.id}/watchlist/movies`).send(watchlistPayload)
     const res = await poster.agent.post(`/v1/reviews`).send(reviewPayload)
 
     review = res.body.data
@@ -259,7 +259,7 @@ describe("comments", () => {
 
         beforeAll(async () => {
             await poster.agent.get(`/v1/media/series?id=${TmdbMockPayloads.seriesDetails.id}`)
-            await poster.agent.post(`/v1/watchlist/series`).send({
+            await poster.agent.post(`/v1/users/${poster.details.id}/watchlist/series`).send({
                 id: TmdbMockPayloads.seriesDetails.id,
                 hasWatched: true,
                 rating: "9"

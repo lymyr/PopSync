@@ -1,4 +1,4 @@
-import { expect, test, describe, beforeAll, vi, afterAll, afterEach, beforeEach } from "vitest";
+import { expect, test, describe, beforeAll, vi, afterAll, afterEach } from "vitest";
 import tmdb from "../../../lib/tmdb.ts";
 import TmdbMockPayloads from "../../mocks/TmdbMockPayloads.ts";
 import { testUserGen, type TestUser } from "../../utils/userGeneration.ts";
@@ -11,25 +11,30 @@ beforeAll(async () => {
 
     vi.spyOn(Object.getPrototypeOf(tmdb.movies), "details").mockResolvedValue(TmdbMockPayloads.movieDetails)
     vi.spyOn(Object.getPrototypeOf(tmdb.tvShows), "details").mockResolvedValue(TmdbMockPayloads.seriesDetails)
+
+    await Promise.all([
+        user.agent.get(`/v1/media/movies?id=${TmdbMockPayloads.movieDetails.id}`),
+        user.agent.get(`/v1/media/series?id=${TmdbMockPayloads.seriesDetails.id}`)
+    ])
 })
 
 afterAll(async () => {
-    await Promise.all([prisma.user.deleteMany(), prisma.session.deleteMany()])
+    await Promise.all([
+        prisma.user.deleteMany(), 
+        prisma.session.deleteMany(),
+        prisma.movie.deleteMany(),
+        prisma.series.deleteMany()
+    ])
 })
 
 describe("movies", () => {
-    beforeEach(async () => {
-        await user.agent.get(`/v1/media/movies?id=${TmdbMockPayloads.movieDetails.id}`)
-    })
-
     afterEach(async () => {
         await prisma.watchListMovie.deleteMany()
-        await prisma.movie.deleteMany()
     })
 
     describe("bad payload tests", () => {
         test("missing hasWatched", async () => {
-            const res = await user.agent.post("/v1/watchlist/movies")
+            const res = await user.agent.post(`/v1/users/${user.details.id}/watchlist/movies`)
                 .send({
                     id: TmdbMockPayloads.movieDetails.id,
                     rating: null
@@ -38,7 +43,7 @@ describe("movies", () => {
         })
 
         test("invalid hasWatched", async () => {
-            const res = await user.agent.post("/v1/watchlist/movies")
+            const res = await user.agent.post(`/v1/users/${user.details.id}/watchlist/movies`)
                 .send({
                     id: TmdbMockPayloads.movieDetails.id,
                     hasWatched: "watched",
@@ -48,7 +53,7 @@ describe("movies", () => {
         })
 
         test("missing rating", async () => {
-            const res = await user.agent.post("/v1/watchlist/movies")
+            const res = await user.agent.post(`/v1/users/${user.details.id}/watchlist/movies`)
                 .send({
                     id: TmdbMockPayloads.movieDetails.id,
                     hasWatched: false
@@ -57,7 +62,7 @@ describe("movies", () => {
         })
 
         test("negative rating", async () => {
-            const res = await user.agent.post("/v1/watchlist/movies")
+            const res = await user.agent.post(`/v1/users/${user.details.id}/watchlist/movies`)
                 .send({
                     id: TmdbMockPayloads.movieDetails.id,
                     hasWatched: false,
@@ -67,7 +72,7 @@ describe("movies", () => {
         })
 
         test("rating > 10", async () => {
-            const res = await user.agent.post("/v1/watchlist/movies")
+            const res = await user.agent.post(`/v1/users/${user.details.id}/watchlist/movies`)
                 .send({
                     id: TmdbMockPayloads.movieDetails.id,
                     hasWatched: false,
@@ -77,7 +82,7 @@ describe("movies", () => {
         })
 
         test("rating string", async () => {
-            const res = await user.agent.post("/v1/watchlist/movies")
+            const res = await user.agent.post(`/v1/users/${user.details.id}/watchlist/movies`)
                 .send({
                     id: TmdbMockPayloads.movieDetails.id,
                     hasWatched: false,
@@ -88,7 +93,7 @@ describe("movies", () => {
     })
 
     test("adds existing movie record to watchlist", async () => {
-        const res = await user.agent.post("/v1/watchlist/movies")
+        const res = await user.agent.post(`/v1/users/${user.details.id}/watchlist/movies`)
             .send({
                 id: TmdbMockPayloads.movieDetails.id,
                 hasWatched: false,
@@ -108,7 +113,7 @@ describe("movies", () => {
 
     test("reject non-existing record to watchlist", async () => {
         const mockId = generateMockId([TmdbMockPayloads.movieDetails.id])
-        const res = await user.agent.post("/v1/watchlist/movies")
+        const res = await user.agent.post(`/v1/users/${user.details.id}/watchlist/movies`)
             .send({
                 id: mockId,
                 hasWatched: false,
@@ -126,7 +131,7 @@ describe("movies", () => {
     })
 
     test("update watchlist", async () => {
-        await user.agent.post("/v1/watchlist/movies")
+        await user.agent.post(`/v1/users/${user.details.id}/watchlist/movies`)
             .send({
                 id: TmdbMockPayloads.movieDetails.id,
                 hasWatched: false,
@@ -141,7 +146,7 @@ describe("movies", () => {
         expect(nonUpdatedWatchlist?.hasWatched).toBe(false)
         expect(nonUpdatedWatchlist?.rating).toBe(3)
 
-        await user.agent.put("/v1/watchlist/movies")
+        await user.agent.put(`/v1/users/${user.details.id}/watchlist/movies`)
             .send({
                 id: TmdbMockPayloads.movieDetails.id,
                 hasWatched: true,
@@ -159,7 +164,7 @@ describe("movies", () => {
     })
 
     test("remove watchlist", async () => {
-        await user.agent.post("/v1/watchlist/movies")
+        await user.agent.post(`/v1/users/${user.details.id}/watchlist/movies`)
             .send({
                 id: TmdbMockPayloads.movieDetails.id,
                 hasWatched: false,
@@ -173,7 +178,7 @@ describe("movies", () => {
         })
         expect(wlist).not.toBeNull()
 
-        await user.agent.delete("/v1/watchlist/movies")
+        await user.agent.delete(`/v1/users/${user.details.id}/watchlist/movies`)
             .send({ id: TmdbMockPayloads.movieDetails.id })
 
         const deletedWList = await prisma.watchListMovie.findFirst({
@@ -187,18 +192,13 @@ describe("movies", () => {
 })
 
 describe("series", () => {
-    beforeEach(async () => {
-        await user.agent.get(`/v1/media/series?id=${TmdbMockPayloads.seriesDetails.id}`)
-    })
-
     afterEach(async () => {
         await prisma.watchListSeries.deleteMany()
-        await prisma.series.deleteMany()
     })
 
     describe("bad payload tests", () => {
         test("missing hasWatched", async () => {
-            const res = await user.agent.post("/v1/watchlist/series")
+            const res = await user.agent.post(`/v1/users/${user.details.id}/watchlist/series`)
                 .send({
                     id: TmdbMockPayloads.seriesDetails.id,
                     rating: null
@@ -207,7 +207,7 @@ describe("series", () => {
         })
 
         test("invalid hasWatched", async () => {
-            const res = await user.agent.post("/v1/watchlist/series")
+            const res = await user.agent.post(`/v1/users/${user.details.id}/watchlist/series`)
                 .send({
                     id: TmdbMockPayloads.seriesDetails.id,
                     hasWatched: "watched",
@@ -217,7 +217,7 @@ describe("series", () => {
         })
 
         test("missing rating", async () => {
-            const res = await user.agent.post("/v1/watchlist/series")
+            const res = await user.agent.post(`/v1/users/${user.details.id}/watchlist/series`)
                 .send({
                     id: TmdbMockPayloads.seriesDetails.id,
                     hasWatched: false
@@ -226,7 +226,7 @@ describe("series", () => {
         })
 
         test("negative rating", async () => {
-            const res = await user.agent.post("/v1/watchlist/series")
+            const res = await user.agent.post(`/v1/users/${user.details.id}/watchlist/series`)
                 .send({
                     id: TmdbMockPayloads.seriesDetails.id,
                     hasWatched: false,
@@ -236,7 +236,7 @@ describe("series", () => {
         })
 
         test("rating > 10", async () => {
-            const res = await user.agent.post("/v1/watchlist/series")
+            const res = await user.agent.post(`/v1/users/${user.details.id}/watchlist/series`)
                 .send({
                     id: TmdbMockPayloads.seriesDetails.id,
                     hasWatched: false,
@@ -246,7 +246,7 @@ describe("series", () => {
         })
 
         test("rating string", async () => {
-            const res = await user.agent.post("/v1/watchlist/series")
+            const res = await user.agent.post(`/v1/users/${user.details.id}/watchlist/series`)
                 .send({
                     id: TmdbMockPayloads.seriesDetails.id,
                     hasWatched: false,
@@ -257,7 +257,7 @@ describe("series", () => {
     })
 
     test("adds existing series record to watchlist", async () => {
-        const res = await user.agent.post("/v1/watchlist/series")
+        const res = await user.agent.post(`/v1/users/${user.details.id}/watchlist/series`)
             .send({
                 id: TmdbMockPayloads.seriesDetails.id,
                 hasWatched: false,
@@ -277,7 +277,7 @@ describe("series", () => {
 
     test("reject non-existing record to watchlist", async () => {
         const mockId = generateMockId([TmdbMockPayloads.seriesDetails.id])
-        const res = await user.agent.post("/v1/watchlist/series")
+        const res = await user.agent.post(`/v1/users/${user.details.id}/watchlist/series`)
             .send({
                 id: mockId,
                 hasWatched: false,
@@ -295,7 +295,7 @@ describe("series", () => {
     })
 
     test("update watchlist", async () => {
-        await user.agent.post("/v1/watchlist/series")
+        await user.agent.post(`/v1/users/${user.details.id}/watchlist/series`)
             .send({
                 id: TmdbMockPayloads.seriesDetails.id,
                 hasWatched: false,
@@ -308,7 +308,7 @@ describe("series", () => {
             }
         })
         expect(nonUpdatedWatchlist?.hasWatched).toBe(false)
-        await user.agent.put("/v1/watchlist/series")
+        await user.agent.put(`/v1/users/${user.details.id}/watchlist/series`)
             .send({
                 id: TmdbMockPayloads.seriesDetails.id,
                 hasWatched: true,
@@ -326,7 +326,7 @@ describe("series", () => {
     })
 
     test("remove watchlist", async () => {
-        await user.agent.post("/v1/watchlist/series")
+        await user.agent.post(`/v1/users/${user.details.id}/watchlist/series`)
             .send({
                 id: TmdbMockPayloads.seriesDetails.id,
                 hasWatched: false,
@@ -340,7 +340,7 @@ describe("series", () => {
         })
         expect(wlist).not.toBeNull()
 
-        await user.agent.delete("/v1/watchlist/series")
+        await user.agent.delete(`/v1/users/${user.details.id}/watchlist/series`)
             .send({ id: TmdbMockPayloads.seriesDetails.id })
 
         const deletedWList = await prisma.watchListSeries.findFirst({
@@ -353,33 +353,61 @@ describe("series", () => {
     })
 })
 
+describe("retrieve watchlist", () => {
+    let friend: TestUser, otherUser: TestUser;
+    beforeAll(async () => {
+        const genUsers = await Promise.all([testUserGen(1, "friend"), testUserGen(1, "other user")])
+        friend = genUsers[0][0] as TestUser
+        otherUser = genUsers[1][0] as TestUser
 
-test.todo("returns all of user's watchlist ONLY IF connection or watchlist owner", async () => {
-    await Promise.all([
-        user.agent.get(`/v1/media/series?id=${TmdbMockPayloads.seriesDetails.id}`),
-        user.agent.get(`/v1/media/movies?id=${TmdbMockPayloads.movieDetails.id}`),
-    ])
-    await Promise.all([
-        user.agent.post("/v1/watchlist/series")
-            .send({
+        await Promise.all([
+            friend.agent.post(`/v1/users/${friend.details.id}/watchlist/series`).send({
                 id: TmdbMockPayloads.seriesDetails.id,
                 hasWatched: false,
-                rating: null
+                rating: "10"
             }),
-        user.agent.post("/v1/watchlist/movies")
-            .send({
+            otherUser.agent.post(`/v1/users/${otherUser.details.id}/watchlist/series`).send({
+                id: TmdbMockPayloads.seriesDetails.id,
+                hasWatched: false,
+                rating: "1"
+            }),
+            user.agent.post(`/v1/users/${user.details.id}/watchlist/movies`).send({
                 id: TmdbMockPayloads.movieDetails.id,
                 hasWatched: false,
-                rating: null
+                rating: "10"
             }),
-    ])
-    const res = await user.agent.get("/v1/watchlist")
+            user.agent.post(`/v1/users/${user.details.id}/watchlist/series`).send({
+                id: TmdbMockPayloads.seriesDetails.id,
+                hasWatched: false,
+                rating: "10"
+            }),
+            friend.agent.post(`/v1/connections/${user.details.id}`).then(() => user.agent.put(`/v1/connections/${friend.details.id}`))
+        ])
+    })
+    
+    afterAll(async () => {
+        await prisma.user.deleteMany({
+            where: {
+                id: {
+                    in: [friend.details.id, otherUser.details.id]
+                }
+            }
+        })
+    })
 
-    expect(res.body.data.movies[0].id).toBe(TmdbMockPayloads.movieDetails.id)
-    expect(res.body.data.movies[0].hasWatched).toEqual(expect.any(Boolean))
-    expect(res.body.data.series[0].id).toBe(TmdbMockPayloads.seriesDetails.id)
-    expect(res.body.data.series[0].hasWatched).toEqual(expect.any(Boolean))
+    test("returns all of user watchlist", async () => {
+        const res = await user.agent.get(`/v1/users/${user.details.id}/watchlist`)
 
-    await Promise.all([prisma.watchListMovie.deleteMany(), prisma.watchListSeries.deleteMany()])
-    await Promise.all([prisma.movie.deleteMany(), prisma.series.deleteMany()])
+        expect(res.body.data.movies[0].id).toBe(TmdbMockPayloads.movieDetails.id)
+        expect(res.body.data.movies[0].hasWatched).toEqual(expect.any(Boolean))
+        expect(res.body.data.series[0].id).toBe(TmdbMockPayloads.seriesDetails.id)
+        expect(res.body.data.series[0].hasWatched).toEqual(expect.any(Boolean))
+
+        await Promise.all([prisma.watchListMovie.deleteMany(), prisma.watchListSeries.deleteMany()])
+        await Promise.all([prisma.movie.deleteMany(), prisma.series.deleteMany()])
+    })
+
+    test.todo("watchlist retrieval with user with no accepted connection", async () => {
+
+    })
 })

@@ -73,3 +73,5 @@ describe("reviews", () => {
 
     test.todo("get comments where isPublic = true or connection = true")
 })
+
+describe("watchlist")

@@ -43,7 +43,7 @@ function payload(movieId: any, seriesId: any, content: any, rating: any, isPubli
 
 describe("series", () => {
     beforeAll(async () => {
-        await user.agent.post(`/v1/watchlist/series`).send({
+        await user.agent.post(`/v1/users/${user.details.id}/watchlist/series`).send({
             id: TmdbMockPayloads.seriesDetails.id,
             hasWatched: false,
             rating: "10"
@@ -157,7 +157,7 @@ describe("series", () => {
 
 describe("movies", () => {
     beforeAll(async () => {
-        await user.agent.post(`/v1/watchlist/movies`).send({
+        await user.agent.post(`/v1/users/${user.details.id}/watchlist/movies`).send({
             id: TmdbMockPayloads.movieDetails.id,
             hasWatched: true,
             rating: "0"
@@ -271,7 +271,7 @@ describe("movies", () => {
 describe("read and deletes", () => {
     let otherUser: TestUser
     beforeAll(async () => {
-        await user.agent.post(`/v1/watchlist/series`).send({
+        await user.agent.post(`/v1/users/${user.details.id}/watchlist/series`).send({
             id: TmdbMockPayloads.seriesDetails.id,
             hasWatched: false,
             rating: "10"

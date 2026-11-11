@@ -1,8 +1,8 @@
 import { Router } from "express";
-import isAuth from "../../middleware/auth/isAuth.ts";
-import WatchListValidation from "../../middleware/validation/WatchListValidation.ts";
-import {throwerHelper} from "../../middleware/validation/Validation.ts";
-import { addToMovieWatchList, addToSeriesWatchList, deleteMovieWatchList, deleteSeriesWatchList, getWatchList, updateMovieWatchList, updateSeriesWatchList } from "../controllers/watchlistController.ts";
+import isAuth from "../../../middleware/auth/isAuth.ts";
+import WatchListValidation from "../../../middleware/validation/WatchListValidation.ts";
+import {throwerHelper} from "../../../middleware/validation/Validation.ts";
+import { addToMovieWatchList, addToSeriesWatchList, deleteMovieWatchList, deleteSeriesWatchList, getWatchList, updateMovieWatchList, updateSeriesWatchList } from "../../controllers/watchlistController.ts";
 
 const watchlistRouter = Router()
 watchlistRouter.use(isAuth)

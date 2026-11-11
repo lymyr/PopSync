@@ -84,7 +84,7 @@ describe("account deletion", () => {
         undeletedUser = (await testUserGen(1, "undeleted"))[0] as TestUser
         vi.spyOn(Object.getPrototypeOf(tmdb.movies), "details").mockResolvedValue(TmdbMockPayloads.movieDetails)
         await undeletedUser.agent.get(`/v1/media/movies?id=${TmdbMockPayloads.movieDetails.id}`)
-        await undeletedUser.agent.post("/v1/watchlist/movies")
+        await undeletedUser.agent.post(`/v1/users/${undeletedUser.details.id}/watchlist/movies`)
             .send({
                 id: TmdbMockPayloads.movieDetails.id,
                 hasWatched: true,

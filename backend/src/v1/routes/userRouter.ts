@@ -6,6 +6,7 @@ import passport from "../../lib/passport.ts";
 import SearchQueryValidation from "../../middleware/validation/SearchQueryValidation.ts";
 import type { SearchQuery } from "../../middleware/validation/SearchQueryValidation.ts";
 import isAuth from "../../middleware/auth/isAuth.ts";
+import watchlistRouter from "./user-subroutes/watchlistRouter.ts";
 
 const userRouter = Router()
 
@@ -31,5 +32,7 @@ userRouter.get("/",
 userRouter.delete("/",
     deleteAccount
 )
+
+userRouter.use("/:id/watchlist", watchlistRouter)
 
 export default userRouter
