@@ -12,9 +12,17 @@ commentRouter.get("/",
     getComments
 )
 
-commentRouter.post("/{:commentId}",
+commentRouter.post("/",
     [
         ReviewValidation.id(),
+        commentValidation.content,
+    ],
+    throwerHelper,
+    addComment
+)
+
+commentRouter.post("/:commentId",
+    [
         commentValidation.commentId,
         commentValidation.content,
     ],
@@ -22,11 +30,8 @@ commentRouter.post("/{:commentId}",
     addComment
 )
 
-commentRouter.delete("/{:commentId}",
-    [
-        ReviewValidation.id(),
-        commentValidation.commentId
-    ],
+commentRouter.delete("/:commentId",
+    commentValidation.commentId,
     throwerHelper,
     deleteComment
 )

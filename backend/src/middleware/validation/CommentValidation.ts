@@ -14,6 +14,7 @@ export default class commentValidation extends Validation {
         // will not test content length. 
         // i may change my mind idk. 
         // note: add db constraint once mind is made up
+
     static commentId = param("commentId").if((id) => id !== undefined)
         .isInt().withMessage("commentId must be an integer").toInt().bail()
         .custom(async (id, meta) => {
@@ -37,5 +38,7 @@ export default class commentValidation extends Validation {
                 req.errorStatusCode = 401
                 throw new Error("please don't touch other people's comments")
             }
+
+            req.comment = comment
         })
 }

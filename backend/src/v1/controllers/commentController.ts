@@ -12,19 +12,25 @@ export async function getComments(req: Request<{id: number}>, res: Response) {
     res.json({data: comments})
 }
 
-export async function addComment(req: Request<{id: number, commentId: number | null}, {}, CommentBody>, res: Response) {
+export async function addComment(req: Request<{id?: number, commentId?: number}, {}, CommentBody>, res: Response) {
+    if (!(req.params.id || req.comment)) {
+        throw new Error("req.params.id and req.params.commentId are both false")
+    }
+
     const authorId = req.user?.id as number
+    const reviewId = req.comment?.reviewId || req.params.id as number
+
     const prismaRes = await prisma.$transaction([
         prisma.comment.create({
             data: { 
                 authorId,
-                reviewId: req.params.id,
+                reviewId,
                 content: req.body.content,
-                commentId: req.params.commentId
+                commentId: req.params.commentId || null
             }
         }),
         prisma.review.update({
-            where: { id: req.params.id },
+            where: { id: reviewId },
             data: {
                 commentCount: { increment: 1 }
             }
@@ -35,13 +41,13 @@ export async function addComment(req: Request<{id: number, commentId: number | n
     })
 }
 
-export async function deleteComment(req: Request<{id: number, commentId: number | null}>, res: Response) {
-    if (req.params.commentId === null || req.params.commentId === undefined)
-        return res.status(404).send("missing 'commentId' param")
+export async function deleteComment(req: Request<{id: string, commentId: number}>, res: Response) {
+    if (!req.comment)
+        return res.status(404).send("missing 'commentId' param or req.comment")
 
     const transactionTasks: PrismaPromise<any>[] = [
         prisma.review.update({
-            where: {id: req.params.id }, 
+            where: {id: req.comment.reviewId }, 
             data: { commentCount: {decrement: 1}}
         })
     ]

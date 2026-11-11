@@ -1,5 +1,5 @@
 import type { Movie, MovieDetails, Search, TV, TvShowDetails } from "tmdb-ts";
-import type { User as PrismaUserType, Review, WatchListMovie, WatchListSeries } from "../generated/prisma/client.ts";
+import type { Comment, User as PrismaUserType, Review, WatchListMovie, WatchListSeries } from "../generated/prisma/client.ts";
 
 declare global {
   namespace Express {
@@ -12,6 +12,7 @@ declare global {
       wlMovie?: WatchListMovie;
       wlSeries?: WatchListSeries;
       softDelComment?: boolean;
+      comment?: Comment
     }
     interface Response {
       sendError(status: number, message: string): this;
