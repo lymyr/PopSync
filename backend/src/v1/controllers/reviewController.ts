@@ -69,3 +69,120 @@ export async function getReview(req: Request<{id: number}>, res: Response) {
         data: review
     })
 }
+
+export async function getTimeline(req: Request<{}, {}, {}, {lastReviewId: number}>, res:Response) {
+    let reviews;
+    const viewerId = req.user?.id as number
+    
+    if (req.query.lastReviewId)
+        reviews = await prisma.review.findMany({
+            skip: 1,
+            cursor: {
+                id: Number(req.query.lastReviewId),
+            },
+            take: 20,
+            omit: {
+                authorId: true
+            },
+            include: {
+                author: {
+                    select: {
+                        id: true,
+                        username: true,
+                    }
+                }
+            },
+            where: {
+                AND: [
+                    {
+                        id: {
+                            gte: Number(req.query.lastReviewId)
+                        },
+                    },
+                    {
+                        OR: [
+                            {isPublic: true},
+                            {
+                                author: {
+                                    OR: [
+                                        {
+                                            sentConnection: {
+                                                some: {
+                                                    receiverId: viewerId,
+                                                    status: "accepted"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            receivedConnection: {
+                                                some: {
+                                                    senderId: viewerId,
+                                                    status: "accepted"
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                ]
+                
+                
+            },
+            orderBy: [
+                { dateUpdated: "desc" },
+                { dateAdded: "desc" },
+                { id: "asc" }
+            ]
+        })
+    else
+        reviews = await prisma.review.findMany({
+            take: 20,
+            omit: {
+                authorId: true
+            },
+            include: {
+                author: {
+                    select: {
+                        id: true,
+                        username: true,
+                    }
+                },
+            },
+            where: {
+                OR: [
+                    {isPublic: true},
+                    {
+                        author: {
+                            OR: [
+                                {
+                                    sentConnection: {
+                                        some: {
+                                            receiverId: viewerId,
+                                            status: "accepted"
+                                        }
+                                    }
+                                },
+                                {
+                                    receivedConnection: {
+                                        some: {
+                                            senderId: viewerId,
+                                            status: "accepted"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            orderBy: [
+                { dateUpdated: "desc" },
+                { dateAdded: "desc" },
+                { id: "asc" }
+            ]
+        })
+
+    res.json({ data: reviews })
+}

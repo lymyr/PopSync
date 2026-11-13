@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { deleteReview, getReview, postReview, updateReview } from "../controllers/reviewController.ts";
+import { deleteReview, getReview, getTimeline, postReview, updateReview } from "../controllers/reviewController.ts";
 import isAuth from "../../middleware/auth/isAuth.ts";
 import ReviewValidation from "../../middleware/validation/ReviewValidation.ts";
 import watchlistRatingSideEffectService from "../../middleware/services/watchlistRatingSideEffectService.ts";
@@ -10,6 +10,10 @@ import likeRouter from "./review-subroutes/likeRouter.ts";
 
 const reviewRouter = Router()
 reviewRouter.use(isAuth)
+
+reviewRouter.get("/",
+    getTimeline
+)
 
 reviewRouter.post("/", 
     ReviewValidation.post,

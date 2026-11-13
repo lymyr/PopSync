@@ -20,6 +20,7 @@ declare global {
       }
       lastMovie: PrismaMovie
       lastSeries: Series
+      lastReview: Review
     }
     interface Response {
       sendError(status: number, message: string): this;
