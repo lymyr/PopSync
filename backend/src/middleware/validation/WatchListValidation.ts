@@ -1,4 +1,4 @@
-import { body, param } from "express-validator";
+import { body, param, query } from "express-validator";
 import Validation from "./Validation.ts";
 import { prisma } from "../../lib/prisma.ts";
 import type { Request } from "express";
@@ -79,4 +79,26 @@ export default class WatchListValidation extends Validation {
     static moviePayload = [...this.payload, this.movieIdPayload]
     static seriesPayload = [...this.payload, this.seriesIdPayload]
     static updatePayload = [...this.payload, this.id()]
+
+    private static lastMovieId = query("lastMovieId").if(id => id !== undefined).isInt().withMessage("expected int").toInt()
+        .custom(async (id, meta) => {
+            const req = meta.req as Request
+            const movie = await prisma.movie.findUnique({ where: {id}})
+            if(!movie) {
+                req.errorStatusCode = 404
+                throw new Error("movie not found")
+            }
+            req.lastMovie = movie
+        })
+    private static lastSeriesId = query("lastSeriesId").if(id => id !== undefined).isInt().withMessage("expected int").toInt()
+        .custom(async (id, meta) => {
+            const req = meta.req as Request
+            const series = await prisma.series.findUnique({ where: {id}})
+            if(!series) {
+                req.errorStatusCode = 404
+                throw new Error("movie not found")
+            }
+            req.lastSeries = series
+        })
+    static comparisonPagination = [this.lastMovieId, this.lastSeriesId]
 }

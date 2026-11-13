@@ -2,12 +2,15 @@ import { Router } from "express";
 import WatchListValidation from "../../../middleware/validation/WatchListValidation.ts";
 import {throwerHelper} from "../../../middleware/validation/Validation.ts";
 import { addToMovieWatchList, addToSeriesWatchList, deleteMovieWatchList, deleteSeriesWatchList, getWatchList, updateMovieWatchList, updateSeriesWatchList } from "../../controllers/watchlistController.ts";
+import compareWatchlistService from "../../../middleware/services/compareWatchlistService.ts";
 
 const watchlistRouter = Router({mergeParams: true})
 
 watchlistRouter.get("/", 
     WatchListValidation.canAccess,
+    WatchListValidation.comparisonPagination,
     throwerHelper,
+    compareWatchlistService,
     getWatchList
 )
 
