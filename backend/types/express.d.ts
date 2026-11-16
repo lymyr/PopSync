@@ -1,5 +1,5 @@
 import type { Movie, MovieDetails, Search, TV, TvShowDetails } from "tmdb-ts";
-import type { Comment, User as PrismaUserType, Review, Series, Movie as PrismaMovie, WatchListMovie, WatchListSeries } from "../generated/prisma/client.ts";
+import type { Comment, User as PrismaUserType, Review, Series, Movie as PrismaMovie, WatchListMovie, WatchListSeries, WatchGroup } from "../generated/prisma/client.ts";
 import type { WatchlistMovieComparisonTypes, WatchlistSeriesComparisonTypes } from "../src/middleware/services/compareWatchlistService.ts";
 
 declare global {
@@ -21,6 +21,9 @@ declare global {
       lastMovie: PrismaMovie
       lastSeries: Series
       lastReview: Review
+      watchgroup?: WatchGroup
+      watchgroupFallbackName?: string
+      foundUser: User
     }
     interface Response {
       sendError(status: number, message: string): this;

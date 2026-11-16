@@ -41,6 +41,8 @@ test("unauthorized endpoint check", async () => {
     expect(res.status).toBe(401)
 })
 
+test.todo("watchlist search")
+
 describe("movies", () => {
     afterEach(async () => {
         await prisma.watchListMovie.deleteMany()
@@ -457,4 +459,7 @@ describe("series", () => {
         expect(res.status).toBe(404)
         expect(watchlist).toBeNull()
     })
+
+    // future implementation
+    test.todo("episode tracker")
 })

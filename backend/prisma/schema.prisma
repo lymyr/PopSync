@@ -186,10 +186,12 @@ model WatchListSeries {
 }
 
 model WatchGroup {
-  id     Int              @id @default(autoincrement())
-  users  WatchGroupUser[]
-  series Series[]
-  movies Movie[]
+  id           Int              @id @default(autoincrement())
+  name         String
+  fallbackName String           @map("fallback_name")
+  users        WatchGroupUser[]
+  series       Series[]
+  movies       Movie[]
 
   @@map("watch_group")
 }
