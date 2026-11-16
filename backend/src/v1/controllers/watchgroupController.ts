@@ -1,12 +1,19 @@
 import type { Request, Response } from "express";
 import { prisma } from "../../lib/prisma.ts";
-import type { watchgroupBodyType } from "../../middleware/validation/watchgroupValidation.ts";
+import type { WatchgroupBodyType } from "../../middleware/validation/WatchgroupValidation.ts";
+import FallbackName from "../../services/watchgroup/FallbackName.ts";
 
-export async function createWatchgroup(req: Request<{}, {}, watchgroupBodyType>, res: Response) {
-    const wg = await prisma.watchGroup.create({
+export async function createWatchgroup(req: Request<{}, {}, WatchgroupBodyType>, res: Response) {
+    const data = await prisma.watchGroup.create({
         data: {
             name: req.body.name,
-            fallbackName: req.watchgroupFallbackName ? req.watchgroupFallbackName : "",
+            fallbackName: await FallbackName.createFallbackName(
+                req.body.name, 
+                [
+                    req.user?.id as number, 
+                    ...req.body.members.map(m => m.userId)
+                ]
+            ),
             users: {
                 createMany: {
                     data: [...req.body.members, {
@@ -17,12 +24,10 @@ export async function createWatchgroup(req: Request<{}, {}, watchgroupBodyType>,
             }
         }
     })
-    res.status(201).json({
-        data: wg
-    })
+    res.status(201).json({ data })
 }
 
-export async function addUserToWatchgroup(req: Request<{id: number}, {}, Pick<watchgroupBodyType, "members">>, res: Response) {
+export async function addUserToWatchgroup(req: Request<{id: number}, {}, Pick<WatchgroupBodyType, "members">>, res: Response) {
     const tasks: Array<any> = [ 
         prisma.watchGroupUser.createManyAndReturn({
             data: req.body.members.map(m => {
@@ -33,10 +38,11 @@ export async function addUserToWatchgroup(req: Request<{id: number}, {}, Pick<wa
             })
         })
     ]
-    if (req.watchgroupFallbackName)
+    const fallbackName = await FallbackName.updateFallbackName(req.watchgroup, {type: "add", members: req.body.members.map(m => m.userId)})
+    if (fallbackName)
         tasks.push(prisma.watchGroup.update({ 
             where: {id: req.params.id},
-            data: {fallbackName: req.watchgroupFallbackName}
+            data: {fallbackName}
         }))
     
     const [users, watchgroup] = await prisma.$transaction(tasks)
@@ -58,10 +64,11 @@ export async function deleteUserFromWatchgroup(req: Request<{id: number, userId:
             }}
         })
     ]
-    if (req.watchgroupFallbackName)
+    const fallbackName = await FallbackName.updateFallbackName(req.watchgroup, {type: "delete", member: req.foundUser})
+    if (fallbackName)
         tasks.push(prisma.watchGroup.update({
             where: {id: req.params.id},
-            data: {fallbackName: req.watchgroupFallbackName}
+            data: {fallbackName}
         }))
 
     const [userWg, watchgroup] = await prisma.$transaction(tasks)

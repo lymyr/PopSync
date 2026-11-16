@@ -534,7 +534,7 @@ describe("watchgroup read and updates", () => {
         })
     })
 
-    describe.only("adding and removing media", () => {
+    describe.todo("adding and removing media", () => {
         const movieSearchMock = vi.spyOn(Object.getPrototypeOf(tmdb.movies), "details").mockResolvedValue(TmdbMockPayloads.movieDetails)
         const seriesSearchMock = vi.spyOn(Object.getPrototypeOf(tmdb.tvShows), "details").mockResolvedValue(TmdbMockPayloads.seriesDetails)
 

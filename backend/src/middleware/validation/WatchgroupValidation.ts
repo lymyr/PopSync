@@ -3,7 +3,7 @@ import Validation from "./Validation.ts"
 import { prisma } from "../../lib/prisma.ts"
 import type { Request } from "express"
 
-export interface watchgroupBodyType {
+export interface WatchgroupBodyType {
     name: string;
     members: {
         userId: number;
@@ -11,11 +11,11 @@ export interface watchgroupBodyType {
     }[]
 }
 
-export default class watchgroupValidation extends Validation {
+export default class WatchgroupValidation extends Validation {
     static name = body("name").isString().trim()
 
     static members = body("members").isArray().if(arr => arr.length > 0)
-        .custom((memArr: watchgroupBodyType["members"]) => {
+        .custom((memArr: WatchgroupBodyType["members"]) => {
             for (const mem of memArr) {
                 if (typeof mem.userId != "number") {
                     throw new Error(`userId: ${mem.userId} is an invalid value. Expected type: number`)

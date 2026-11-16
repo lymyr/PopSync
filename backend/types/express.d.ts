@@ -21,8 +21,7 @@ declare global {
       lastMovie: PrismaMovie
       lastSeries: Series
       lastReview: Review
-      watchgroup?: WatchGroup
-      watchgroupFallbackName?: string
+      watchgroup: WatchGroup
       foundUser: User
     }
     interface Response {

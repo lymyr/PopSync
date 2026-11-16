@@ -1,34 +1,30 @@
 import { Router } from "express";
 import isAuth from "../../middleware/auth/isAuth.ts";
-import watchgroupValidation from "../../middleware/validation/watchgroupValidation.ts";
+import WatchgroupValidation from "../../middleware/validation/WatchgroupValidation.ts";
 import { throwerHelper } from "../../middleware/validation/Validation.ts";
 import { addUserToWatchgroup, createWatchgroup, deleteUserFromWatchgroup } from "../controllers/watchgroupController.ts";
-import getWatchgroupFallbackNameService from "../../middleware/services/getWatchgroupFallbackNameService.ts";
 
 const watchgroupRouter = Router()
 watchgroupRouter.use(isAuth)
 
 watchgroupRouter.post("/",
-    watchgroupValidation.members,
-    watchgroupValidation.name,
+    WatchgroupValidation.members,
+    WatchgroupValidation.name,
     throwerHelper,
-    getWatchgroupFallbackNameService,
     createWatchgroup
 )
 
 watchgroupRouter.post("/:id/users",
-    watchgroupValidation.members,
-    watchgroupValidation.isAdmin,
+    WatchgroupValidation.members,
+    WatchgroupValidation.isAdmin,
     throwerHelper,
-    getWatchgroupFallbackNameService,
     addUserToWatchgroup
 )
 
 watchgroupRouter.delete("/:id/users/:userId",
-    watchgroupValidation.isAdmin,
-    watchgroupValidation.userId,
+    WatchgroupValidation.isAdmin,
+    WatchgroupValidation.userId,
     throwerHelper,
-    getWatchgroupFallbackNameService,
     deleteUserFromWatchgroup
 )
 

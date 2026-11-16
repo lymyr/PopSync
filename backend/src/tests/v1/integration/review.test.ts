@@ -417,7 +417,7 @@ describe("auth, read, deletes", () => {
 
         expect(res.status).toBe(200)
         expect(res.body.data[0].content).toBe("cool")
-        expect(res.body.data[0].replies[0].replies[0].replies).toBeUndefined()
+        expect(res.body.data[0].replies[0].replies[0].replies).toBe(undefined)
     })
 
     test("get review where isPublic = true or connection = true", async () => {
