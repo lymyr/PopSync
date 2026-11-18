@@ -9,7 +9,7 @@ declare global {
       tmdbSearch: Search<TV> | Search<Movie>;
       movieDetails: MovieDetails;
       seriesDetails: TvShowDetails;
-      review?: Review;
+      review: Review;
       wlMovie?: WatchListMovie;
       wlSeries?: WatchListSeries;
       softDelComment?: boolean;

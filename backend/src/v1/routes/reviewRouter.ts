@@ -2,7 +2,6 @@ import { Router } from "express";
 import { deleteReview, getReview, getTimeline, postReview, updateReview } from "../controllers/reviewController.ts";
 import isAuth from "../../middleware/auth/isAuth.ts";
 import ReviewValidation from "../../middleware/validation/ReviewValidation.ts";
-import watchlistRatingSideEffectService from "../../middleware/services/watchlistRatingSideEffectService.ts";
 import { throwerHelper } from "../../middleware/validation/Validation.ts";
 import handleUniqueReview from "../../middleware/errorHandlers/handleUniqueReview.ts";
 import commentRouter from "./review-subroutes/commentRouter.ts";
@@ -18,7 +17,6 @@ reviewRouter.get("/",
 reviewRouter.post("/", 
     ReviewValidation.post,
     throwerHelper,
-    watchlistRatingSideEffectService,
     postReview,
     handleUniqueReview,
 )
@@ -32,7 +30,6 @@ reviewRouter.get("/:id",
 reviewRouter.put("/:id",
     ReviewValidation.update,
     throwerHelper,
-    watchlistRatingSideEffectService,
     updateReview
 )
 
