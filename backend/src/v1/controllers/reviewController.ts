@@ -4,6 +4,7 @@ import type { PostReviewBody, UpdateReviewBody } from "../../middleware/validati
 import nestedCommentQuery from "../../utils/nestedCommentQuery.ts";
 import createReview from "../../services/reviews/createReview.ts";
 import updateReviewService from "../../services/reviews/updateReview.ts";
+import queryTimeline from "../../services/reviews/queryTimeline.ts";
 
 export async function postReview(req: Request<{}, {}, PostReviewBody>, res: Response) {
     const authorId = req.user?.id as number
@@ -53,119 +54,7 @@ export async function getReview(req: Request<{id: number}>, res: Response) {
     })
 }
 
-export async function getTimeline(req: Request<{}, {}, {}, {lastReviewId: number}>, res:Response) {
-    let reviews;
-    const viewerId = req.user?.id as number
-    
-    if (req.query.lastReviewId)
-        reviews = await prisma.review.findMany({
-            skip: 1,
-            cursor: {
-                id: Number(req.query.lastReviewId),
-            },
-            take: 20,
-            omit: {
-                authorId: true
-            },
-            include: {
-                author: {
-                    select: {
-                        id: true,
-                        username: true,
-                    }
-                }
-            },
-            where: {
-                AND: [
-                    {
-                        id: {
-                            gte: Number(req.query.lastReviewId)
-                        },
-                    },
-                    {
-                        OR: [
-                            {isPublic: true},
-                            {
-                                author: {
-                                    OR: [
-                                        {
-                                            sentConnection: {
-                                                some: {
-                                                    receiverId: viewerId,
-                                                    status: "accepted"
-                                                }
-                                            }
-                                        },
-                                        {
-                                            receivedConnection: {
-                                                some: {
-                                                    senderId: viewerId,
-                                                    status: "accepted"
-                                                }
-                                            }
-                                        }
-                                    ]
-                                }
-                            }
-                        ]
-                    }
-                ]
-                
-                
-            },
-            orderBy: [
-                { dateUpdated: "desc" },
-                { dateAdded: "desc" },
-                { id: "asc" }
-            ]
-        })
-    else
-        reviews = await prisma.review.findMany({
-            take: 20,
-            omit: {
-                authorId: true
-            },
-            include: {
-                author: {
-                    select: {
-                        id: true,
-                        username: true,
-                    }
-                },
-            },
-            where: {
-                OR: [
-                    {isPublic: true},
-                    {
-                        author: {
-                            OR: [
-                                {
-                                    sentConnection: {
-                                        some: {
-                                            receiverId: viewerId,
-                                            status: "accepted"
-                                        }
-                                    }
-                                },
-                                {
-                                    receivedConnection: {
-                                        some: {
-                                            senderId: viewerId,
-                                            status: "accepted"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                ]
-            },
-            orderBy: [
-                { dateUpdated: "desc" },
-                { dateAdded: "desc" },
-                { id: "asc" }
-            ]
-        })
-
+export async function getTimeline(req: Request<{}, {}, {}, {lastReviewId?: string}>, res:Response) {
+    const reviews = await queryTimeline(req.user?.id as number, Number(req.query.lastReviewId))
     res.json({ data: reviews })
 }
