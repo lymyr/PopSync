@@ -1,11 +1,15 @@
 import type { Request, Response } from "express";
 import { prisma } from "../../lib/prisma.ts";
 import type { BodyPayload } from "../../middleware/validation/WatchListValidation.ts";
+import compareWatchlist from "../../services/watchlist/compareWatchlist.ts";
 
-export async function getWatchList(req: Request<{userId?: number}>, res: Response) {
-    res.json({
-        data: req.watchlistComparison
+export async function getWatchList(req: Request<{userId: number}, {}, {}, {search: string | undefined}>, res: Response) {
+    const data = await compareWatchlist(req.user?.id as number, [req.params.userId], {
+        lastMovie: req.lastMovie,
+        lastSeries: req.lastSeries,
+        search: req.query.search
     })
+    res.json({ data })
 }
 
 export async function addToMovieWatchList(req: Request<{}, {}, BodyPayload>, res: Response) {

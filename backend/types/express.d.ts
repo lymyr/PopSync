@@ -14,12 +14,8 @@ declare global {
       wlSeries?: WatchListSeries;
       softDelComment?: boolean;
       comment?: Comment;
-      watchlistComparison: {
-        movies: WatchlistMovieComparisonTypes[];
-        series: WatchlistSeriesComparisonTypes[];
-      }
-      lastMovie: PrismaMovie
-      lastSeries: Series
+      lastMovie?: PrismaMovie
+      lastSeries?: Series
       lastReview: Review
       watchgroup: WatchGroup
       foundUser: User

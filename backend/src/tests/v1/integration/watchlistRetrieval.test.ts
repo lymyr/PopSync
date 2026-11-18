@@ -22,11 +22,11 @@ beforeAll(async () => {
 
     const seriesArr: cSeries[] = []
     const moviesArr: cMovie[] = []
-    for (let i = 0; i < 25; i++) {
+    for (let i = 0; i < 26; i++) {
         seriesArr.push({
             id: i,
-            name: `series ${i}`,
-            originalName: `series ${i} original`,
+            name: `boliad's series`,
+            originalName: `"quoted" ${i}" original series`,
             overview: `series ${i} overview`,
             posterPath: "",
             backdropPath: "",
@@ -38,8 +38,8 @@ beforeAll(async () => {
 
         moviesArr.push({
             id: i,
-            title: `movie ${i}`,
-            originalTitle: `movie ${i} original`,
+            title: `bread's movie`,
+            originalTitle: `quotes "all day" ${i} original`,
             overview: `movie ${i} overview`,
             posterPath: "",
             backdropPath: "",
@@ -68,8 +68,11 @@ beforeAll(async () => {
     const watchlistMovieTasks: wlMovie[] = []
     movies.forEach((movie, mI) => {
         users.forEach((user, uI) => {
+            // BOOKMARK-CHECKS
             // 2nd user, first 3 movies are not in their watchlist
-            if (!(uI == 1 && mI < 3))
+            // current user only has the last 5 movies in their watchlist
+            // one movie is not included in anyone's watchlist
+            if (!(uI == 1 && mI < 3) && !(uI === 0 && mI < 20) && (mI != movies.length-1))
                 watchlistMovieTasks.push({
                     userId: user.details.id,
                     movieId: movie.id,
@@ -80,12 +83,13 @@ beforeAll(async () => {
     })
     interface wlSeries extends watchlist { seriesId: number }
     const watchlistSeriesTask: wlSeries[] = []
-    series.forEach((series, sI) => {
+    series.forEach((s, sI) => {
+        // BOOKMARK-CHECKS
         users.forEach((user, uI) => {
-            if (!(uI == 1 && sI < 3))
+            if (!(uI == 1 && sI < 3) && !(uI === 0 && sI < 20) && (sI != series.length - 1))
                 watchlistSeriesTask.push({
                     userId: user.details.id,
-                    seriesId: series.id,
+                    seriesId: s.id,
                     hasWatched: false,
                     rating: uI+1,
                 })
@@ -119,23 +123,45 @@ afterAll(async () => {
     ])
 })
 
-
-
 test("compare watchlist", async () => {
     const res = await users[0]?.agent.get(`/v1/users/${users[1]?.details.id}/watchlist`)
+
+    // checks if all users are included in a watchlist even if a user agent doesnt have the media in their watchlist
     expect(res?.body.data.movies[0].users).toEqual(expect.any(Array))
     expect(res?.body.data.series[0].users).toEqual(expect.any(Array))
     expect(res?.body.data.movies[0].users).toHaveLength(2)
     expect(res?.body.data.series[0].users).toHaveLength(2)
+    // ratings are equal to index+1 of users
+    console.log(res?.body.data.movies[0])
+    expect(res?.body.data.movies[0].users[1].rating).toBeNull()
+    expect(res?.body.data.movies[0].users[0].rating).toBe(2)
 
     const movies = res?.body.data.movies
     const series = res?.body.data.series
+    expect(movies).toHaveLength(20)
+    expect(series).toHaveLength(20)
     const searchParam = new URLSearchParams([
         ["lastMovieId", movies[movies.length-1].id],
         ["lastSeriesId", series[series.length-1].id]
     ])
 
+    // see 'BOOKMARK-CHECKS' for reference in this file
+    // checks if it only includes media from a user's watchlist
+    movies.forEach((movie: any) => {
+        expect(movie.id).not.toBe(0)
+        expect(movie.id).not.toBe(1)
+        expect(movie.id).not.toBe(2)
+    })
+    series.forEach((s: any) => {
+        expect(s.id).not.toBe(0)
+        expect(s.id).not.toBe(1)
+        expect(s.id).not.toBe(2)
+    })
+
+    // checks if it gets the last 2 movies and series, not including the last piece of media (see 'BOOKMARK-CHECKS')
     const paginatedRes = await users[0]?.agent.get(`/v1/users/${users[1]?.details.id}/watchlist?${searchParam.toString()}`)
+    expect(paginatedRes?.body.data.movies).toHaveLength(2)
+    expect(paginatedRes?.body.data.series).toHaveLength(2)
     paginatedRes?.body.data.movies.forEach((movie: any) => {
         expect(movies).toEqual(expect.not.arrayContaining([movie]))
     })
@@ -157,21 +183,16 @@ describe("unauthorized", () => {
 })
 
 test("search by title", async () => {
-    const search = new URLSearchParams([["search", "seRIEs 20 original"]])
+    const search = new URLSearchParams([["search", `20" original`]])
     const resSeries = await users[0]?.agent.get(`/v1/users/${users[1]?.details.id}/watchlist?${search.toString()}`)
-
     expect(resSeries?.body.data.series).toHaveLength(1)
     expect(resSeries?.body.data.movies).toHaveLength(0)
-    expect(resSeries?.body.data.series[0].name).toBe("series 20")
+    expect(resSeries?.body.data.series[0].originalName).toBe(`"quoted" 20" original series`)
 
-    search.set("search", "MoVie 20")
+    search.set("search", `"all day" 20`)
 
     const resMovie = await users[0]?.agent.get(`/v1/users/${users[1]?.details.id}/watchlist?${search.toString()}`)
     expect(resMovie?.body.data.series).toHaveLength(0)
     expect(resMovie?.body.data.movies).toHaveLength(1)
-    expect(resMovie?.body.data.movies[0].title).toBe("movie 20")
+    expect(resMovie?.body.data.movies[0].originalTitle).toBe(`quotes "all day" 20 original`)
 })
-
-// future implementation just to avoid some scope creep
-test.todo("sorted by a particular user's rating")
-test.todo("filter by a particular user's hasWatched")
