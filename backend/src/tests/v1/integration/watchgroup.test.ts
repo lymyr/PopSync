@@ -72,6 +72,7 @@ beforeAll(async () => {
     const watchlistMovieTasks: wlMovie[] = []
     movies.forEach((movie, mI) => {
         users.forEach((user, uI) => {
+            // BOOKMARK CHECKS
             // 2nd user, first 3 movies are not in their watchlist
             if (!(uI == 1 && mI < 3))
                 watchlistMovieTasks.push({
@@ -86,6 +87,7 @@ beforeAll(async () => {
     const watchlistSeriesTask: wlSeries[] = []
     series.forEach((series, sI) => {
         users.forEach((user, uI) => {
+            // 2nd user, first 3 series are not in their watchlist
             if (!(uI == 1 && sI < 3))
                 watchlistSeriesTask.push({
                     userId: user.details.id,
@@ -787,8 +789,100 @@ describe("watchgroup read and updates", () => {
         })
     })
 
+    /* 
+        note: there is a loophole where user A with no connection to a user B can 
+        view a user B's watchlist by adding user B to a watchgroup.
+        
+        todo: add watchgroup requests. put off for now since this proj taking too long =~=
+    */
     describe("compare movie/series ratings", () => {
-        test.todo("pagination")
-        test.todo("search")
+        beforeAll(async () => {
+            await prisma.watchGroup.update({where: {id: watchgroup.id},
+                data: {
+                    movies: { connect: movies.map(m => {return {id: m.id}}) },
+                    series: { connect: series.map(s => {return {id: s.id}}) },
+                    users: { createMany: { data: 
+                        users.filter((_u, i) => i != 0 && i != users.length - 1).map(u => {return {userId: u.details.id}})
+                    }}
+                }
+            })
+        })
+
+        afterAll(async () => {
+            await Promise.all([
+                prisma.watchGroup.update({where: {id: watchgroup.id},
+                    data: {
+                        movies: { disconnect: movies.map(m => {return {id: m.id}}) },
+                        series: { disconnect: series.map(s => {return {id: s.id}}) }
+                    }
+                }),
+                prisma.watchGroupUser.deleteMany({ where: {userId: {not: users[0]?.details.id as number}}})
+            ])
+        })
+
+        test("pagination", async () => {
+            const res = await users[0]?.agent.get(`/v1/watchgroups/${watchgroup.id}`)
+            expect(res?.status).toBe(200)
+            expect(res?.body.data.movies).toEqual(expect.any(Array))
+            expect(res?.body.data.series).toEqual(expect.any(Array))
+
+            // search BOOKMARK CHECKS in this file for more info
+            res?.body.data.movies.forEach((m: any) => {
+                if (movies.slice(0, 3).map(mElem => mElem.title).includes(m.title)) {
+                    m.users.forEach((u: any) => {
+                        if (u.username == "user1") 
+                            expect(u.rating).toBeNull()
+                        else 
+                            expect(u.rating).toEqual(Number(u.username.at(-1)) + 1) 
+                    })
+                }
+                else
+                    m.users.forEach((u: any) => { expect(u.rating).toEqual(Number(u.username.at(-1)) + 1) })
+            })
+            res?.body.data.series.forEach((s: any) => {
+                if (series.slice(0, 3).map(sElem => sElem.name).includes(s.name)) {
+                    s.users.forEach((u: any) => {
+                        if (u.username == "user1") 
+                            expect(u.rating).toBeNull()
+                        else 
+                            expect(u.rating).toEqual(Number(u.username.at(-1)) + 1) 
+                    })
+                }
+                else
+                    s.users.forEach((u: any) => { expect(u.rating).toEqual(Number(u.username.at(-1)) + 1) })
+            })
+
+            const searchParam = new URLSearchParams([
+                ["lastMovieId", res?.body.data.movies[res?.body.data.movies.length-1].id],
+                ["lastSeriesId", res?.body.data.series[res?.body.data.series.length-1].id]
+            ])
+
+            const paginatedRes = await users[0]?.agent.get(`/v1/watchgroups/${watchgroup.id}?${searchParam.toString()}`)
+            expect(paginatedRes?.body.data.movies).toHaveLength(movies.length-20)
+            expect(paginatedRes?.body.data.series).toHaveLength(series.length-20)
+            paginatedRes?.body.data.movies.forEach((movie: any) => {
+                expect(res?.body.data.movies).toEqual(expect.not.arrayContaining([movie]))
+            })
+            paginatedRes?.body.data.series.forEach((paginatedSeries: any) => {
+                expect(res?.body.data.series).toEqual(expect.not.arrayContaining([paginatedSeries]))
+            })
+        })
+
+        test("search", async () => {
+            const searchParam = new URLSearchParams([
+                ["search", movies[21]?.originalTitle as string]
+            ])
+            const res = await users[0]?.agent.get(`/v1/watchgroups/${watchgroup.id}?${searchParam.toString()}`)
+            expect(res?.status).toBe(200)
+            expect(res?.body.data.movies).toHaveLength(1)
+            expect(res?.body.data.movies[0].title).toBe(movies[21]?.title)
+            expect(res?.body.data.series).toHaveLength(0)
+        })
+
+        test("non-member read", async () => {
+            const res = await users[users.length-1]?.agent.get(`/v1/watchgroups/${watchgroup.id}`)
+            expect(res?.status).toBe(404)
+        })
+
     })
 })

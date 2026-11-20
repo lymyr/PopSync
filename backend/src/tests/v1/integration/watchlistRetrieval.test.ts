@@ -132,8 +132,8 @@ test("compare watchlist", async () => {
     expect(res?.body.data.movies[0].users).toHaveLength(2)
     expect(res?.body.data.series[0].users).toHaveLength(2)
     // ratings are equal to index+1 of users
-    expect(res?.body.data.movies[0].users[1].rating).toBeNull()
-    expect(res?.body.data.movies[0].users[0].rating).toBe(2)
+    expect(res?.body.data.movies[0].users[0].rating).toBeNull()
+    expect(res?.body.data.movies[0].users[1].rating).toBe(2)
 
     const movies = res?.body.data.movies
     const series = res?.body.data.series

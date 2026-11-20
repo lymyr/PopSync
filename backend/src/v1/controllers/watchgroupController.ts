@@ -3,6 +3,7 @@ import { prisma } from "../../lib/prisma.ts";
 import type { WatchgroupBodyType } from "../../middleware/validation/WatchgroupValidation.ts";
 import FallbackName from "../../services/watchgroup/FallbackName.ts";
 import addMedia from "../../services/watchgroup/addMedia.ts";
+import compareWatchlist from "../../services/watchlist/compareWatchlist.ts";
 
 export async function createWatchgroup(req: Request<{}, {}, WatchgroupBodyType>, res: Response) {
     const data = await prisma.watchGroup.create({
@@ -153,4 +154,17 @@ export async function removeSeriesFromWatchgroup(req: Request<{id: number, serie
         }
     })
     res.sendStatus(200)
+}
+
+export async function compareMedia(req: Request<{id: number}, {}, {}, {search?: string}>, res: Response) {
+    const data = await compareWatchlist(
+        req.user?.id as number, 
+        {watchgroupId: req.params.id},
+        {
+            lastMovie: req.lastMovie,
+            lastSeries: req.lastSeries,
+            search: req.query.search
+        }
+    )
+    res.json({ data })
 }

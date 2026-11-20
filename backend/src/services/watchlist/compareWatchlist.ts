@@ -41,17 +41,23 @@ interface QueryTaskType extends Array<Promise<any>> {
     1: Promise<WatchlistSeriesComparisonTypes[]>
 }
 
-type query = {
-    lastMovie: Movie | undefined,
-    lastSeries: Series | undefined,
-    search: string | undefined
-}
+type ToCompare = 
+    {validatedUserIds?: never; watchgroupId: number} | 
+    {validatedUserIds: number[]; watchgroupId?: never}
 
 class RawQueries {
-    static getMovies = (currentUserId: number, mediaFromUserIds: Array<number>, lastMovie: Movie | undefined, search: boolean) => {
-        const stringUserIds = [currentUserId, ...mediaFromUserIds].join(", ")
+    static getMovies = (currentUserId: number, froms: ToCompare, lastMovie: Movie | undefined, search: boolean) => {
+        const stringUserIds = froms.validatedUserIds ? [currentUserId, ...froms.validatedUserIds].join(", ") : currentUserId
         const title = lastMovie?.title.split("").map(char => char == "'" ? "''" : char).join("")
         return `
+            ${ froms.watchgroupId ?
+                `
+                    WITH users_from_watch_group AS (
+                        SELECT wg_user.user_id FROM watch_group_user AS wg_user 
+                            WHERE wg_user.watch_group_id = ${froms.watchgroupId}
+                    )
+                ` : ""
+            }
             SELECT 
                 m.id, 
                 m.title, 
@@ -72,19 +78,23 @@ class RawQueries {
                                 'dateAdded', inner_wlm.date_added,
                                 'dateUpdated', inner_wlm.date_updated
                             )
-                            ORDER BY inner_wlm.rating, inner_wlm.has_watched, u.username
+                            ORDER BY inner_wlm.rating DESC, inner_wlm.has_watched, u.username
                         )
                     ) FROM "user" as u
                     LEFT JOIN watchlist_movie AS inner_wlm ON
                         u.id = inner_wlm.user_id
                         AND inner_wlm.movie_id = m.id
-                    WHERE u.id IN (${stringUserIds})
+                    WHERE u.id IN (${froms.watchgroupId ? 
+                        "SELECT users_from_watch_group.user_id FROM users_from_watch_group" 
+                        : stringUserIds})
                 ) AS users
             FROM movie AS m
             INNER JOIN watchlist_movie AS wlm ON 
                 m.id = wlm.movie_id 
             WHERE
-                wlm.user_id IN (${mediaFromUserIds.join(", ")})
+                wlm.user_id IN (${froms.watchgroupId ? 
+                    "SELECT users_from_watch_group.user_id FROM users_from_watch_group" 
+                    : froms.validatedUserIds?.join(", ")})
                 ${lastMovie ?
                     `
                     AND m.id > ${lastMovie.id}
@@ -97,10 +107,19 @@ class RawQueries {
         `
     }
 
-    static getSeries = (currentUserId: number, mediaFromUserIds: Array<number>, lastSeries: Series | undefined, search: boolean) => {
-        const stringUserIds = [currentUserId, ...mediaFromUserIds].join(", ")
+    static getSeries = (currentUserId: number, froms: ToCompare, lastSeries: Series | undefined, search: boolean) => {
+        const stringUserIds = froms.validatedUserIds ? [currentUserId, ...froms.validatedUserIds].join(", ") : currentUserId
         const title = lastSeries?.name.split("").map(char => char == "'" ? "''" : char).join("")
-        return `SELECT
+        return `
+            ${ froms.watchgroupId ?
+                `
+                    WITH users_from_watch_group AS (
+                        SELECT wg_user.user_id FROM watch_group_user AS wg_user 
+                            WHERE wg_user.watch_group_id = ${froms.watchgroupId}
+                    )
+                ` : ""
+            }
+            SELECT
                 s.id, 
                 s.name, 
                 s.original_name as "originalName",
@@ -120,20 +139,23 @@ class RawQueries {
                                 'dateAdded', inner_wls.date_added,
                                 'dateUpdated', inner_wls.date_updated
                             )
-                            ORDER BY inner_wls.rating, inner_wls.has_watched, u.username
+                            ORDER BY inner_wls.rating DESC, inner_wls.has_watched, u.username
                         )
                     ) FROM "user" as u
                     LEFT JOIN watchlist_series AS inner_wls ON
                         u.id = inner_wls.user_id
                         AND inner_wls.series_id = s.id
-                    WHERE u.id IN (${stringUserIds})
+                    WHERE u.id IN (${froms.watchgroupId ? 
+                        "SELECT users_from_watch_group.user_id FROM users_from_watch_group" 
+                        : stringUserIds})
                 ) AS users
             FROM series AS s
             INNER JOIN watchlist_series AS wls ON 
-                s.id = wls.series_id 
-                AND wls.user_id IN (${mediaFromUserIds.join(", ")})
+                s.id = wls.series_id
             WHERE
-                wls.user_id IN (${mediaFromUserIds.join(", ")})
+                wls.user_id IN (${froms.watchgroupId ? 
+                    "SELECT users_from_watch_group.user_id FROM users_from_watch_group"
+                    : froms.validatedUserIds?.join(", ")})
                 ${lastSeries ?
                     `
                     AND s.id > ${lastSeries.id}
@@ -147,36 +169,44 @@ class RawQueries {
     }
 }
 
+type query = {
+    lastMovie: Movie | undefined,
+    lastSeries: Series | undefined,
+    search: string | undefined
+}
+
 export default async function compareWatchlist(
     validatedCurrentUserId: number, 
-    validatedUserIdsToCompare: Array<number>,
+    toCompare: ToCompare,
     query?: query
 ) {
     // paranoid check in case of sql injection
-    [validatedCurrentUserId, ...validatedUserIdsToCompare]
+    if (toCompare.validatedUserIds) {
+        [validatedCurrentUserId, ...toCompare.validatedUserIds]
         .map(id => {
             if (typeof id != "number")
                 throw new Error("userId is not an integer")
             return id
         }) 
+    }
 
     const queryTasks: QueryTaskType = [
         prisma.$queryRawUnsafe<WatchlistMovieComparisonTypes[]>(
-            RawQueries.getMovies(validatedCurrentUserId, validatedUserIdsToCompare, query?.lastMovie, false)
+            RawQueries.getMovies(validatedCurrentUserId, toCompare, query?.lastMovie, false)
         ),
         prisma.$queryRawUnsafe<WatchlistSeriesComparisonTypes[]>(
-            RawQueries.getSeries(validatedCurrentUserId, validatedUserIdsToCompare, query?.lastSeries, false)
+            RawQueries.getSeries(validatedCurrentUserId, toCompare, query?.lastSeries, false)
         )
     ]
 
     if (query?.search) {
         queryTasks[0] = prisma.$queryRawUnsafe<WatchlistMovieComparisonTypes[]>(
-            RawQueries.getMovies(validatedCurrentUserId, validatedUserIdsToCompare, query?.lastMovie, true ),
+            RawQueries.getMovies(validatedCurrentUserId, toCompare, query?.lastMovie, true ),
             `%${query.search.toUpperCase()}%`
         )
 
         queryTasks[1] = prisma.$queryRawUnsafe<WatchlistSeriesComparisonTypes[]>(
-            RawQueries.getSeries(validatedCurrentUserId, validatedUserIdsToCompare, query?.lastSeries, true),
+            RawQueries.getSeries(validatedCurrentUserId, toCompare, query?.lastSeries, true),
             `%${query?.search.toUpperCase()}%`
         )
     }

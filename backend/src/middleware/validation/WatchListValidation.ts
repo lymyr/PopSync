@@ -100,5 +100,6 @@ export default class WatchListValidation extends Validation {
             }
             req.lastSeries = series
         })
-    static comparisonPagination = [this.lastMovieId, this.lastSeriesId]
+    private static search = query("search").if(s => s !== undefined).isString().trim()
+    static comparisonPagination = [this.lastMovieId, this.lastSeriesId, this.search]
 }

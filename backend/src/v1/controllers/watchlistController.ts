@@ -4,7 +4,7 @@ import type { BodyPayload } from "../../middleware/validation/WatchListValidatio
 import compareWatchlist from "../../services/watchlist/compareWatchlist.ts";
 
 export async function getWatchList(req: Request<{userId: number}, {}, {}, {search: string | undefined}>, res: Response) {
-    const data = await compareWatchlist(req.user?.id as number, [req.params.userId], {
+    const data = await compareWatchlist(req.user?.id as number, {validatedUserIds: [req.params.userId]}, {
         lastMovie: req.lastMovie,
         lastSeries: req.lastSeries,
         search: req.query.search

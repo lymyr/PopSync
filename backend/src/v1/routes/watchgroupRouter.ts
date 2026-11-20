@@ -2,7 +2,8 @@ import { Router } from "express";
 import isAuth from "../../middleware/auth/isAuth.ts";
 import WatchgroupValidation from "../../middleware/validation/WatchgroupValidation.ts";
 import { throwerHelper } from "../../middleware/validation/Validation.ts";
-import leaveWatchgroup, { addMovieToWatchgroup, addSeriesToWatchgroup, addUserToWatchgroup, createWatchgroup, deleteUserFromWatchgroup, removeMovieFromWatchgroup, removeSeriesFromWatchgroup } from "../controllers/watchgroupController.ts";
+import leaveWatchgroup, { addMovieToWatchgroup, addSeriesToWatchgroup, addUserToWatchgroup, compareMedia, createWatchgroup, deleteUserFromWatchgroup, removeMovieFromWatchgroup, removeSeriesFromWatchgroup } from "../controllers/watchgroupController.ts";
+import WatchListValidation from "../../middleware/validation/WatchListValidation.ts";
 
 const watchgroupRouter = Router()
 watchgroupRouter.use(isAuth)
@@ -18,6 +19,13 @@ watchgroupRouter.post("/",
     WatchgroupValidation.name,
     throwerHelper,
     createWatchgroup
+)
+
+watchgroupRouter.get("/:id",
+    WatchgroupValidation.isMember(),
+    WatchListValidation.comparisonPagination,
+    throwerHelper,
+    compareMedia
 )
 
 watchgroupRouter.post("/:id/users",

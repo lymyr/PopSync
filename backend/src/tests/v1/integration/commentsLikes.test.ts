@@ -11,7 +11,7 @@ let users: TestUser[]
 let poster: TestUser
 let review: Review;
 beforeAll(async () => {
-    users = await testUserGen(11)
+    users = await testUserGen(51)
     poster = users[0] as TestUser
     users = users.slice(1)
     vi.spyOn(Object.getPrototypeOf(tmdb.movies), "details").mockResolvedValue(TmdbMockPayloads.movieDetails)

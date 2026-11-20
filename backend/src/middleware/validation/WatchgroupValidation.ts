@@ -27,9 +27,9 @@ export default class WatchgroupValidation extends Validation {
             return true
         })
     
-    static id = () => param("id").isInt().toInt()
+    static id = () => param("id").isInt().withMessage("expected watchgroup id to be int").toInt()
 
-    static isAdmin = this.id().withMessage("expected watchgroup id to be int").toInt().bail()
+    static isMember = () => this.id().bail()
         .custom(async (id, meta) => {
             const req = meta.req as Request
             const user = await prisma.watchGroupUser.findUnique({
@@ -45,10 +45,17 @@ export default class WatchgroupValidation extends Validation {
                 throw new Error("you are not a member of this group or the group doesn't exist")
             }
 
-            if (!user?.isAdmin) {
+            req.wgUser = user
+        })
+
+    static isAdmin = this.isMember().bail()
+        .custom((_id, meta) => {
+            const req = meta.req as Request
+            if (!req.wgUser.isAdmin) {
                 req.errorStatusCode = 403
                 throw new Error("you are not an admin")
             }
+            return true
         })
 
     static targetUserId = param("userId").isInt().withMessage("expected userId to be int").toInt().bail()
