@@ -270,13 +270,76 @@ describe("watchgroup read and updates", () => {
         test.todo("non member reads watchlist")
     })
 
-    describe("admin leaves", () => {
-        test.todo("if no admin, promotes another member to admin", async () => {
-
+    /* 
+        note: fallback name is not tested here =~= 
+        it should be fine tho since the parameters are similar in FallbackName.getNewFallbackName
+    */
+    describe("leaving watchgroup", () => {
+        afterEach(async () => {
+            await Promise.all([
+                prisma.watchGroupUser.deleteMany({
+                    where: {userId: {
+                        not: users[0]?.details.id as number
+                    }}
+                }),
+                prisma.watchGroupUser.create({data: {
+                    userId: users[0]?.details.id as number,
+                    watchGroupId: watchgroup.id,
+                    isAdmin: true
+                }})
+            ])
         })
 
-        test.todo("no promotion if there is a present admin")
-        test.todo("delete watchgroup if no member left")
+        test("if no admin, promotes another member to admin", async () => {
+            await prisma.watchGroupUser.create({
+                data: {
+                    watchGroupId: watchgroup.id,
+                    userId: users[1]?.details.id as number,
+                    isAdmin: false
+                }
+            })
+            const res = await users[0]?.agent.delete(`/v1/watchgroups/${watchgroup.id}/users`)
+            expect(res?.status).toBe(200)
+            const members = await prisma.watchGroupUser.findMany()
+            expect(members.length).toBe(1)
+            expect(members[0]?.isAdmin).toBe(true)
+        })
+
+        test("no promotion if there is a present admin", async () => {
+            await prisma.watchGroupUser.createMany({
+                data: [
+                    {
+                        watchGroupId: watchgroup.id,
+                        userId: users[1]?.details.id as number,
+                        isAdmin: false
+                    },
+                    {
+                        watchGroupId: watchgroup.id,
+                        userId: users[2]?.details.id as number,
+                        isAdmin: true
+                    }
+                ]
+            })
+            const res = await users[0]?.agent.delete(`/v1/watchgroups/${watchgroup.id}/users`)
+            expect(res?.status).toBe(200)
+            const members = await prisma.watchGroupUser.findMany({
+                where: {watchGroupId: watchgroup.id}, 
+                orderBy: {isAdmin: "desc"}
+            })
+            expect(members.length).toBe(2)
+            expect(members[0]?.isAdmin).toBe(true)
+            expect(members[0]?.userId).toBe(users[2]?.details.id)
+            expect(members[1]?.isAdmin).toBe(false)
+            expect(members[1]?.userId).toBe(users[1]?.details.id)
+        })
+
+        test("delete watchgroup if no member left", async () => {
+            const res = await users[0]?.agent.delete(`/v1/watchgroups/${watchgroup.id}/users`)
+            expect(res?.status).toBe(200)
+            const wg = await prisma.watchGroup.findUnique({where: {id: watchgroup.id}})
+            expect(wg).toBeFalsy()
+            await prisma.watchGroup.create({ data: watchgroup })
+        })
     })
 
     describe("adding users", () => {
@@ -410,11 +473,23 @@ describe("watchgroup read and updates", () => {
                 expect(res?.status).toBe(403)
                 const user = await prisma.watchGroupUser.findUnique({
                     where: {watchGroupId_userId: {
-                        userId: users[1]?.details.id as number,
+                        userId: users[3]?.details.id as number,
                         watchGroupId: watchgroup.id
                     }}
                 })
                 expect(user).not.toBeNull()
+            })
+
+            test("member leaves the group", async () => {
+                const res = await users[2]?.agent.delete(`/v1/watchgroups/${watchgroup.id}/users`)
+                expect(res?.status).toBe(200)
+                const user = await prisma.watchGroupUser.findUnique({
+                    where: {watchGroupId_userId: {
+                        userId: users[2]?.details.id as number,
+                        watchGroupId: watchgroup.id
+                    }}
+                })
+                expect(user).toBeNull()
             })
         })
 
@@ -534,9 +609,9 @@ describe("watchgroup read and updates", () => {
         })
     })
 
-    describe.todo("adding and removing media", () => {
-        const movieSearchMock = vi.spyOn(Object.getPrototypeOf(tmdb.movies), "details").mockResolvedValue(TmdbMockPayloads.movieDetails)
-        const seriesSearchMock = vi.spyOn(Object.getPrototypeOf(tmdb.tvShows), "details").mockResolvedValue(TmdbMockPayloads.seriesDetails)
+    describe("adding media", () => {
+        const tmdbMovieDetailsMock = vi.spyOn(Object.getPrototypeOf(tmdb.movies), "details").mockResolvedValue(TmdbMockPayloads.movieDetails)
+        const tmdbSeriesDetailsMock = vi.spyOn(Object.getPrototypeOf(tmdb.tvShows), "details").mockResolvedValue(TmdbMockPayloads.seriesDetails)
 
         afterAll(async () => {
             await prisma.watchGroup.update({
@@ -549,8 +624,41 @@ describe("watchgroup read and updates", () => {
         })
 
         afterEach(() => {
-            movieSearchMock.mockClear()
-            seriesSearchMock.mockClear()
+            tmdbMovieDetailsMock.mockClear()
+            tmdbSeriesDetailsMock.mockClear()
+        })
+
+        describe("forbidden/unauth tests", () => {
+            beforeAll(async () => {
+                if (users.length < 3)
+                    throw new Error("these tests require at least 3 users")
+                await prisma.watchGroupUser.create({
+                    data: { 
+                        watchGroupId: watchgroup.id, 
+                        userId: users[1]?.details.id as number 
+                    }
+                })
+            })
+            afterAll(async () => {
+                await prisma.watchGroupUser.delete({
+                    where: { watchGroupId_userId: {
+                        watchGroupId: watchgroup.id, 
+                        userId: users[1]?.details.id as number 
+                    }}
+                })
+            })
+
+            test("non-admin", async () => {
+                const res = await users[1]?.agent.post(`/v1/watchgroups/${watchgroup.id}/movies`)
+                    .send({id: TmdbMockPayloads.movieDetails.id})
+                expect(res?.status).toBe(403)
+            })
+
+            test("non-member", async () => {
+                const res = await users[2]?.agent.post(`/v1/watchgroups/${watchgroup.id}/movies`)
+                    .send({id: TmdbMockPayloads.movieDetails.id})
+                expect(res?.status).toBe(404)
+            })
         })
 
         describe("media already in database", () => {
@@ -599,19 +707,83 @@ describe("watchgroup read and updates", () => {
                 const res = await users[0]?.agent.post(`/v1/watchgroups/${watchgroup.id}/movies`)
                     .send({id: TmdbMockPayloads.movieDetails.id})
                 expect(res?.status).toBe(201)
-                expect(movieSearchMock).not.toHaveBeenCalled()
+                expect(tmdbMovieDetailsMock).not.toHaveBeenCalled()
                 const updatedWg = await prisma.watchGroup.findFirst({ where: {id: watchgroup.id }, include: {movies: true}})
                 expect(updatedWg?.movies).toHaveLength(1)
                 expect(updatedWg?.movies[0]?.id).toBe(TmdbMockPayloads.movieDetails.id)
             })
 
-            test.todo("series")
+            test("series", async () => {
+                const res = await users[0]?.agent.post(`/v1/watchgroups/${watchgroup.id}/series`)
+                    .send({id: TmdbMockPayloads.seriesDetails.id})
+                expect(res?.status).toBe(201)
+                expect(tmdbMovieDetailsMock).not.toHaveBeenCalled()
+                const updatedWg = await prisma.watchGroup.findFirst({ where: {id: watchgroup.id }, include: {series: true}})
+                expect(updatedWg?.series).toHaveLength(1)
+                expect(updatedWg?.series[0]?.id).toBe(TmdbMockPayloads.seriesDetails.id)
+            })
         })
         describe("media is not present in the database", () => {
-            test.todo("movie", async () => {
-
+            test("movie", async () => {
+                const res = await users[0]?.agent.post(`/v1/watchgroups/${watchgroup.id}/movies`)
+                    .send({id: TmdbMockPayloads.movieDetails.id})
+                expect(res?.status).toBe(201)
+                expect(tmdbMovieDetailsMock).toHaveBeenCalled()
+                const updatedWg = await prisma.watchGroup.findFirst({ where: {id: watchgroup.id }, include: {movies: true}})
+                expect(updatedWg?.movies).toHaveLength(1)
+                expect(updatedWg?.movies[0]?.id).toBe(TmdbMockPayloads.movieDetails.id)
             })
-            test.todo("series")
+            test("series", async () => {
+                const res = await users[0]?.agent.post(`/v1/watchgroups/${watchgroup.id}/series`)
+                    .send({id: TmdbMockPayloads.seriesDetails.id})
+                expect(res?.status).toBe(201)
+                expect(tmdbSeriesDetailsMock).toHaveBeenCalled()
+                const updatedWg = await prisma.watchGroup.findFirst({ where: {id: watchgroup.id }, include: {series: true}})
+                expect(updatedWg?.series).toHaveLength(1)
+                expect(updatedWg?.series[0]?.id).toBe(TmdbMockPayloads.seriesDetails.id)
+            })
+        })
+    })
+
+    describe("removing media", () => {
+        beforeAll(async () => {
+            await prisma.watchGroup.update({where: {id: watchgroup.id},
+                data: {
+                    movies: { connect: {id: movies[0]?.id as number} },
+                    series: { connect: {id: series[0]?.id as number} }
+                }
+            })
+        })
+
+        afterAll(async () => {
+            await prisma.watchGroup.update({where: {id: watchgroup.id},
+                data: {
+                    movies: { disconnect: {id: movies[0]?.id as number} },
+                    series: { disconnect: {id: series[0]?.id as number} }
+                }
+            })
+        })
+
+        test("movie" , async () => {
+            const res = await users[0]?.agent.delete(`/v1/watchgroups/${watchgroup.id}/movies/${movies[0]?.id}`)
+            expect(res?.status).toBe(200)
+            const wg = await prisma.watchGroup.findFirst({where: {id: watchgroup.id},
+                select: {
+                    movies: { where: {id: movies[0]?.id as number} }
+                }
+            })
+            expect(wg?.movies[0]).toBeFalsy()
+        })
+
+        test("series", async () => {
+            const res = await users[0]?.agent.delete(`/v1/watchgroups/${watchgroup.id}/series/${series[0]?.id}`)
+            expect(res?.status).toBe(200)
+            const wg = await prisma.watchGroup.findFirst({where: {id: watchgroup.id},
+                select: {
+                    series: { where: {id: series[0]?.id as number} }
+                }
+            })
+            expect(wg?.series[0]).toBeFalsy()
         })
     })
 

@@ -26,8 +26,10 @@ export default class WatchgroupValidation extends Validation {
             }
             return true
         })
+    
+    static id = () => param("id").isInt().toInt()
 
-    static isAdmin = param("id").isInt().withMessage("expected watchgroup id to be int").toInt().bail()
+    static isAdmin = this.id().withMessage("expected watchgroup id to be int").toInt().bail()
         .custom(async (id, meta) => {
             const req = meta.req as Request
             const user = await prisma.watchGroupUser.findUnique({
@@ -36,12 +38,8 @@ export default class WatchgroupValidation extends Validation {
                         userId: req.user?.id as number,
                         watchGroupId: id
                     }
-                },
-                include: {
-                    watchGroup: true
                 }
             })
-
             if (!user) {
                 req.errorStatusCode = 404
                 throw new Error("you are not a member of this group or the group doesn't exist")
@@ -51,11 +49,9 @@ export default class WatchgroupValidation extends Validation {
                 req.errorStatusCode = 403
                 throw new Error("you are not an admin")
             }
-
-            req.watchgroup = user.watchGroup
         })
 
-    static userId = param("userId").isInt().withMessage("expected userId to be int").toInt().bail()
+    static targetUserId = param("userId").isInt().withMessage("expected userId to be int").toInt().bail()
         .custom(async (userId, meta) => {
             const req = meta.req as Request<{id: number}>
             const wgUser = await prisma.watchGroupUser.findUnique({
@@ -65,10 +61,7 @@ export default class WatchgroupValidation extends Validation {
                         watchGroupId: req.params.id
                     }
                 },
-                include: {
-                    watchGroup: true,
-                    user: true
-                }
+                include: { user: true }
             })
             if (!wgUser) {
                 req.errorStatusCode = 404;

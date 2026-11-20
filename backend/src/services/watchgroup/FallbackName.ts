@@ -29,7 +29,8 @@ export default class FallbackName {
     }
     
     // do not include req.user in details.members
-    static updateFallbackName = async (watchgroup: WatchGroup, details: UpdateFallback): Promise<string> => {
+    static getNewFallbackName = async (watchGroupId: number, details: UpdateFallback): Promise<string> => {
+        const watchgroup = await prisma.watchGroup.findUnique({where: {id: watchGroupId}}) as NonNullable<WatchGroup>
         if (watchgroup.name == "") {
             const currentFallbackArr = this.fallbackStringToArray(watchgroup.fallbackName)
             if (details.type == "add" && currentFallbackArr.length < this.maxDisplayingMembers) {
