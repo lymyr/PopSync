@@ -45,6 +45,11 @@ export default class WatchgroupValidation extends Validation {
                 throw new Error("you are not a member of this group or the group doesn't exist")
             }
 
+            if (!user.accepted) {
+                req.errorStatusCode = 403
+                throw new Error("you haven't accepted the watchgroup invite")
+            }
+                
             req.wgUser = user
         })
 
@@ -74,7 +79,7 @@ export default class WatchgroupValidation extends Validation {
                 req.errorStatusCode = 404;
                 throw new Error("User not found")
             }
-            if (wgUser.isAdmin) {
+            if (wgUser.isAdmin && wgUser.accepted) {
                 req.errorStatusCode = 403
                 throw new Error("You cannot remove other admins")
             }

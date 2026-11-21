@@ -125,16 +125,52 @@ afterAll(async () => {
     ])
 })
 
-// REVISE
 describe("watchgroup creation", () => {
     afterEach(async () => {
         await prisma.watchGroupUser.deleteMany()
         await prisma.watchGroup.deleteMany()
     })
 
-    test.todo("watchgroup request")
+    test("watchgroup request", async () => {
+        const watchgroup = await prisma.watchGroup.create({
+            data: { 
+                name: "wg",
+                users: {
+                    create: {
+                        userId: users[0]?.details.id as number,
+                        accepted: true
+                    }
+                }
+            }
+        })
 
-    test("creates watchgroup with name and initial members", async () => {
+        const invitedUsers = users.filter((_u, i) => i != 0)
+        await prisma.watchGroupUser.createMany({
+            data: invitedUsers
+                .map(u => {
+                    return {
+                        userId: u.details.id,
+                        watchGroupId: watchgroup.id,
+                        accepted: false
+                    }
+                })
+        })
+
+        const acceptRes = await Promise.all([
+            ...invitedUsers.filter((_u, i) => i != invitedUsers.length-1)
+            .map(u => u.agent.put(`/v1/watchgroups/${watchgroup.id}/invite`)),
+            invitedUsers[invitedUsers.length-1]?.agent.delete(`/v1/watchgroups/${watchgroup.id}/invite`)
+        ])
+        acceptRes.forEach((r) => expect(r?.status).toBe(200))
+
+        const updatedMembers = await prisma.watchGroupUser.findMany()
+        updatedMembers.forEach((m) => {
+            expect(m.accepted).toBe(true)
+            expect(m.userId).not.toBe(invitedUsers[invitedUsers.length-1]?.details.id)
+        })
+    })
+
+    test("creates watchgroup with name", async () => {
         const res = await users[0]?.agent.post("/v1/watchgroups")
             .send({
                 members: users.filter(u => u.details.id != users[0]?.details.id).map((u, i) => {
@@ -147,7 +183,6 @@ describe("watchgroup creation", () => {
             })
         expect(res?.status).toBe(201)
         expect(res?.body.data.name).toBe("wg")
-        expect(res?.body.data.fallbackName).toBe("")
 
         const [creator, members] = await Promise.all([
             prisma.watchGroupUser.findUnique({
@@ -161,96 +196,22 @@ describe("watchgroup creation", () => {
             prisma.watchGroupUser.findMany({ where: {userId: {not: users[0]?.details.id as number}}})
         ])
         expect(creator).not.toBeNull()
+        expect(creator?.accepted).toBe(true)
         expect([users[0]?.details.id, ...members.map(m => m.userId)]).toEqual(expect.arrayContaining(users.map(u => u.details.id)))
         members.forEach(m => {
             expect(m.isAdmin).toBe(m.userId == users[2]?.details.id ? true : false)
+            expect(m.accepted).toBe(false)
         })
     })
 
-    test("creates watchgroup with name but without initial members", async () => {
+    test("creates watchgroup without initial name", async () => {
         const res = await users[0]?.agent.post("/v1/watchgroups")
             .send({
                 members: [],
-                name: "wg"
+                name: ""
             })
         expect(res?.status).toBe(201)
-        expect(res?.body.data.fallbackName).toBe("")
-        const members = await prisma.watchGroupUser.findMany()
-        expect(members.length).toBe(1)
-        expect(members[0]?.userId).toBe(users[0]?.details.id)
-    })
-
-    describe("no initial name", () => {
-        test("equal to 5 members", async () => {
-            if (users.length < 5) 
-                throw new Error("test users must be at least 5")
-            
-            const res = await users[0]?.agent.post("/v1/watchgroups")
-                .send({
-                    members: users.filter(u => u.details.id != users[0]?.details.id).map(u => {
-                        return {
-                            userId: u.details.id,
-                            isAdmin: false
-                        }
-                    }).slice(0, 4),
-                    name: ""
-                })
-            expect(res?.status).toBe(201)
-            expect(res?.body.data.name).toBe("")
-            const lastWordArr: Array<string> = res?.body.data.fallbackName.split(", ").at(-1).split("")
-            const lastThreeChars = lastWordArr.slice(lastWordArr.length-3).join("")
-            expect(lastThreeChars).not.toBe("...")
-        })
-
-        test("less than 5 members", async () => {
-            const res = await users[0]?.agent.post("/v1/watchgroups")
-                .send({
-                    members: users.filter(u => u.details.id != users[0]?.details.id).map(u => {
-                        return {
-                            userId: u.details.id,
-                            isAdmin: false
-                        }
-                    }).slice(0, 3),
-                    name: ""
-                })
-            expect(res?.status).toBe(201)
-            expect(res?.body.data.name).toBe("")
-            const lastWordArr: Array<string> = res?.body.data.fallbackName.split(", ").at(-1).split("")
-            const lastThreeChars = lastWordArr.slice(lastWordArr.length-3).join("")
-            expect(lastThreeChars).not.toBe("...")
-        })
-
-        test("more than 5 members", async () => {
-            if (users.length <= 5) 
-                throw new Error("test users must be more than 5")
-            
-            const res = await users[0]?.agent.post("/v1/watchgroups")
-                .send({
-                    members: users.filter(u => u.details.id != users[0]?.details.id).map(u => {
-                        return {
-                            userId: u.details.id,
-                            isAdmin: false
-                        }
-                    }),
-                    name: ""
-                })
-            expect(res?.status).toBe(201)
-            expect(res?.body.data.name).toBe("")
-            const lastWordArr: Array<string> = res?.body.data.fallbackName.split(", ").at(-1).split("")
-            const lastThreeChars = lastWordArr.slice(lastWordArr.length-3).join("")
-            expect(lastThreeChars).toBe("...")
-        })
-
-        test("no initial members", async () => {
-            const res = await users[0]?.agent.post("/v1/watchgroups")
-                .send({
-                    members: [],
-                    name: ""
-                })
-            expect(res?.status).toBe(201)
-            expect(res?.body.data.name).toBe("")
-            expect(res?.body.data.fallbackName).toBe(users[0]?.details.username)
-        })
+        expect(res?.body.data.name).toBe(`${users[0]?.details.username}'s watchgroup`)
     })
 })
 
@@ -270,14 +231,25 @@ describe("watchgroup read and updates", () => {
         await prisma.watchGroup.deleteMany()
     })
 
-    describe("non authorized", () => {
-        test.todo("non member reads watchlist")
+    test("admin adds other users", async () => {
+        const res = await users[0]?.agent.post(`/v1/watchgroups/${watchgroup.id}/users`)
+            .send({
+                members: users.filter(u => u.details.id != users[0]?.details.id).map(u => {
+                    return {
+                        userId: u.details.id,
+                        isAdmin: false
+                    }
+                })
+            })
+        expect(res?.status).toBe(201)
+        const members = await prisma.watchGroupUser.findMany({where: {userId: {not: users[0]?.details.id as number}}})
+        expect(members.length).toBe(users.length-1)
+        members.forEach(m => {
+            expect(m.accepted).toBe(false)
+        })
+        await prisma.watchGroupUser.deleteMany({ where: { userId: {not: users[0]?.details.id as number}}})
     })
 
-    /* 
-        note: fallback name is not tested here =~= 
-        it should be fine tho since the parameters are similar in FallbackName.getNewFallbackName
-    */
     describe("leaving watchgroup", () => {
         afterEach(async () => {
             await Promise.all([
@@ -289,7 +261,8 @@ describe("watchgroup read and updates", () => {
                 prisma.watchGroupUser.create({data: {
                     userId: users[0]?.details.id as number,
                     watchGroupId: watchgroup.id,
-                    isAdmin: true
+                    isAdmin: true,
+                    accepted: true
                 }})
             ])
         })
@@ -299,10 +272,11 @@ describe("watchgroup read and updates", () => {
                 data: {
                     watchGroupId: watchgroup.id,
                     userId: users[1]?.details.id as number,
-                    isAdmin: false
+                    isAdmin: false,
+                    accepted: true
                 }
             })
-            const res = await users[0]?.agent.delete(`/v1/watchgroups/${watchgroup.id}/users`)
+            const res = await users[0]?.agent.delete(`/v1/watchgroups/${watchgroup.id}`)
             expect(res?.status).toBe(200)
             const members = await prisma.watchGroupUser.findMany()
             expect(members.length).toBe(1)
@@ -310,6 +284,44 @@ describe("watchgroup read and updates", () => {
         })
 
         test("no promotion if there is a present admin", async () => {
+            await prisma.watchGroupUser.createMany({
+                data: [
+                    {
+                        watchGroupId: watchgroup.id,
+                        userId: users[1]?.details.id as number,
+                        isAdmin: false,
+                        accepted: true
+                    },
+                    {
+                        watchGroupId: watchgroup.id,
+                        userId: users[2]?.details.id as number,
+                        isAdmin: true,
+                        accepted: true
+                    }
+                ]
+            })
+            const res = await users[0]?.agent.delete(`/v1/watchgroups/${watchgroup.id}`)
+            expect(res?.status).toBe(200)
+            const members = await prisma.watchGroupUser.findMany({
+                where: {watchGroupId: watchgroup.id}, 
+                orderBy: {isAdmin: "desc"}
+            })
+            expect(members.length).toBe(2)
+            expect(members[0]?.isAdmin).toBe(true)
+            expect(members[0]?.userId).toBe(users[2]?.details.id)
+            expect(members[1]?.isAdmin).toBe(false)
+            expect(members[1]?.userId).toBe(users[1]?.details.id)
+        })
+
+        test("delete watchgroup if no member left", async () => {
+            const res = await users[0]?.agent.delete(`/v1/watchgroups/${watchgroup.id}`)
+            expect(res?.status).toBe(200)
+            const wg = await prisma.watchGroup.findUnique({where: {id: watchgroup.id}})
+            expect(wg).toBeFalsy()
+            await prisma.watchGroup.create({ data: watchgroup })
+        })
+
+        test("delete watchgroup if there are pending invites but no one has accepted", async () => {
             await prisma.watchGroupUser.createMany({
                 data: [
                     {
@@ -324,292 +336,95 @@ describe("watchgroup read and updates", () => {
                     }
                 ]
             })
-            const res = await users[0]?.agent.delete(`/v1/watchgroups/${watchgroup.id}/users`)
-            expect(res?.status).toBe(200)
-            const members = await prisma.watchGroupUser.findMany({
-                where: {watchGroupId: watchgroup.id}, 
-                orderBy: {isAdmin: "desc"}
-            })
-            expect(members.length).toBe(2)
-            expect(members[0]?.isAdmin).toBe(true)
-            expect(members[0]?.userId).toBe(users[2]?.details.id)
-            expect(members[1]?.isAdmin).toBe(false)
-            expect(members[1]?.userId).toBe(users[1]?.details.id)
-        })
-
-        test("delete watchgroup if no member left", async () => {
-            const res = await users[0]?.agent.delete(`/v1/watchgroups/${watchgroup.id}/users`)
+            const res = await users[0]?.agent.delete(`/v1/watchgroups/${watchgroup.id}`)
             expect(res?.status).toBe(200)
             const wg = await prisma.watchGroup.findUnique({where: {id: watchgroup.id}})
             expect(wg).toBeFalsy()
             await prisma.watchGroup.create({ data: watchgroup })
         })
     })
+    
 
-    describe("adding users", () => {
-        afterEach(async () => {
-            await prisma.watchGroupUser.deleteMany({ where: { userId: {not: users[0]?.details.id as number}}})
-        })
-
-        describe("no initial watchgroup name", () => {
-            beforeAll(async () => {
-                await prisma.watchGroup.update({
-                    where: {id: watchgroup.id},
-                    data: {
-                        name: "",
-                        fallbackName: `${users[0]?.details.username}`
+    describe("removing users", () => {
+        beforeEach(async () => {
+            await prisma.watchGroupUser.createMany({
+                data: users.filter(u => u.details.id != users[0]?.details.id).map((u, i) => {
+                    return {
+                        userId: u.details.id,
+                        isAdmin: i == 0 ? true : false,
+                        watchGroupId: watchgroup.id,
+                        accepted: true
                     }
                 })
             })
-
-            afterAll(async () => {
-                await prisma.watchGroup.update({
-                    where: {id: watchgroup.id},
-                    data: {name: "precreated wg"}
-                })
-            })
-
-            afterEach(async () => {
-                await prisma.watchGroup.update({
-                    where: {id: watchgroup.id},
-                    data: { fallbackName: `${users[0]?.details.username}` }
-                })
-            })
-
-            test("member count = 5", async () => {
-                const res = await users[0]?.agent.post(`/v1/watchgroups/${watchgroup.id}/users`)
-                    .send({
-                        members: users.filter(u => u.details.id != users[0]?.details.id).map(u => {
-                            return {
-                                userId: u.details.id,
-                                isAdmin: false
-                            }
-                        }).slice(0, 4)
-                    })
-                expect(res?.status).toBe(201)
-                expect(res?.body.data.watchgroup.name).toBe("")
-                const lastWordArr: Array<string> = res?.body.data.watchgroup.fallbackName.split(", ").at(-1).split("")
-                const lastThreeChars = lastWordArr.slice(lastWordArr.length-3).join("")
-                expect(lastThreeChars).not.toBe("...")
-            })
-
-            test("member count = 6 ", async () => {
-                if (users.length <= 5)
-                    throw new Error("there must be at least 6 test users")
-                const res = await users[0]?.agent.post(`/v1/watchgroups/${watchgroup.id}/users`)
-                    .send({
-                        members: users.filter(u => u.details.id != users[0]?.details.id).map(u => {
-                            return {
-                                userId: u.details.id,
-                                isAdmin: false
-                            }
-                        }).splice(0, 5)
-                    })
-                expect(res?.status).toBe(201)
-                expect(res?.body.data.watchgroup.name).toBe("")
-                expect(res?.body.data.users).toHaveLength(5)
-                const lastWordArr: Array<string> = res?.body.data.watchgroup.fallbackName.split(", ").at(-1).split("")
-                const lastThreeChars = lastWordArr.slice(lastWordArr.length-3).join("")
-                expect(lastThreeChars).toBe("...")
-            })
         })
 
-        test("admin adds other users", async () => {
-            const res = await users[0]?.agent.post(`/v1/watchgroups/${watchgroup.id}/users`)
-                .send({
-                    members: users.filter(u => u.details.id != users[0]?.details.id).map(u => {
-                        return {
-                            userId: u.details.id,
-                            isAdmin: false
-                        }
-                    })
-                })
-            expect(res?.status).toBe(201)
-            const members = await prisma.watchGroupUser.findMany()
-            expect(members.length).toBe(users.length)
-        })
-    })
-
-    describe("removing users", () => {
         afterEach(async () => {
             await prisma.watchGroupUser.deleteMany({where: {userId: {not: users[0]?.details.id as number}}})
         })
 
-        describe("with initial group name", () => {
-            beforeEach(async () => {
-                await prisma.watchGroupUser.createMany({
-                    data: users.filter(u => u.details.id != users[0]?.details.id).map((u, i) => {
-                        return {
-                            userId: u.details.id,
-                            isAdmin: i == 0 ? true : false,
-                            watchGroupId: watchgroup.id
-                        }
-                    })
-                })
+        test("admin removes a member", async () => {
+            const res = await users[0]?.agent.delete(`/v1/watchgroups/${watchgroup.id}/users/${users[2]?.details.id}`)
+            expect(res?.status).toBe(200)
+            const user = await prisma.watchGroupUser.findUnique({
+                where: {watchGroupId_userId: {
+                    userId: users[2]?.details.id as number,
+                    watchGroupId: watchgroup.id
+                }}
             })
-
-            test("admin removes a member", async () => {
-                const res = await users[0]?.agent.delete(`/v1/watchgroups/${watchgroup.id}/users/${users[2]?.details.id}`)
-                expect(res?.status).toBe(200)
-                const user = await prisma.watchGroupUser.findUnique({
-                    where: {watchGroupId_userId: {
-                        userId: users[2]?.details.id as number,
-                        watchGroupId: watchgroup.id
-                    }}
-                })
-                expect(user).toBeNull()
-            })
-
-            test("admin removes another admin", async () => {
-                const res = await users[0]?.agent.delete(`/v1/watchgroups/${watchgroup.id}/users/${users[1]?.details.id}`)
-                expect(res?.status).toBe(403)
-                const user = await prisma.watchGroupUser.findUnique({
-                    where: {watchGroupId_userId: {
-                        userId: users[1]?.details.id as number,
-                        watchGroupId: watchgroup.id
-                    }}
-                })
-                expect(user).not.toBeNull()
-            })
-            
-            test("member removes a member", async () => {
-                const res = await users[2]?.agent.delete(`/v1/watchgroups/${watchgroup.id}/users/${users[3]?.details.id}`)
-                expect(res?.status).toBe(403)
-                const user = await prisma.watchGroupUser.findUnique({
-                    where: {watchGroupId_userId: {
-                        userId: users[3]?.details.id as number,
-                        watchGroupId: watchgroup.id
-                    }}
-                })
-                expect(user).not.toBeNull()
-            })
-
-            test("member leaves the group", async () => {
-                const res = await users[2]?.agent.delete(`/v1/watchgroups/${watchgroup.id}/users`)
-                expect(res?.status).toBe(200)
-                const user = await prisma.watchGroupUser.findUnique({
-                    where: {watchGroupId_userId: {
-                        userId: users[2]?.details.id as number,
-                        watchGroupId: watchgroup.id
-                    }}
-                })
-                expect(user).toBeNull()
-            })
+            expect(user).toBeNull()
         })
 
-
-        describe("no initial group name", () => {
-            afterAll(async () => {
-                await prisma.watchGroup.update({
-                    where: {id: watchgroup.id},
-                    data: {name: "precreated wg", fallbackName: ""}
-                })
+        test("admin removes another admin", async () => {
+            const res = await users[0]?.agent.delete(`/v1/watchgroups/${watchgroup.id}/users/${users[1]?.details.id}`)
+            expect(res?.status).toBe(403)
+            const user = await prisma.watchGroupUser.findUnique({
+                where: {watchGroupId_userId: {
+                    userId: users[1]?.details.id as number,
+                    watchGroupId: watchgroup.id
+                }}
             })
-            describe("more than 5 members", () => {
-                test("5 members after deletion", async () => {
-                    if (users.length <= 5)
-                        throw new Error("must have at least 6 total test users")
-                    await Promise.all([
-                        prisma.watchGroupUser.createMany({
-                            data: users.filter(u => u.details.id != users[0]?.details.id).map((u, i) => {
-                                return {
-                                    userId: u.details.id,
-                                    isAdmin: i == 0 ? true : false,
-                                    watchGroupId: watchgroup.id
-                                }
-                            }).slice(0, 5)
-                        }),
-                        prisma.watchGroup.update({
-                            where: {id: watchgroup.id},
-                            data: {name: "", fallbackName: `${users.slice(0, 5).map(u => u.details.username).join(", ")}...`}
-                        })
-                    ])
-                    const res = await users[0]?.agent.delete(`/v1/watchgroups/${watchgroup.id}/users/${users[2]?.details.id}`)
-                    expect(res?.status).toBe(200)
-                    const fbNameResArr = res?.body.data.watchgroup.fallbackName.split(", ")
-                    expect(fbNameResArr).toHaveLength(5)
-                    expect(fbNameResArr).toEqual(expect.not.arrayContaining([users[2]?.details.username]))
-                    const lastWordArr = fbNameResArr.at(-1).split("")
-                    expect(lastWordArr.slice(lastWordArr.length-3, lastWordArr.length).join("")).not.toBe("...")
+            expect(user).not.toBeNull()
+        })
 
-                    const user = await prisma.watchGroupUser.findUnique({
-                        where: {watchGroupId_userId: {
-                            userId: users[2]?.details.id as number,
-                            watchGroupId: watchgroup.id
-                        }}
-                    })
-                    expect(user).toBeNull()
-                })
-                
-                test("more than 5 members after deletion", async () => {
-                    if (users.length <= 6)
-                        throw new Error("must have at least 6 total test users")
-                    await Promise.all([
-                        prisma.watchGroupUser.createMany({
-                            data: users.filter(u => u.details.id != users[0]?.details.id).map((u, i) => {
-                                return {
-                                    userId: u.details.id,
-                                    isAdmin: i == 0 ? true : false,
-                                    watchGroupId: watchgroup.id
-                                }
-                            }).slice(0, 6)
-                        }),
-                        prisma.watchGroup.update({
-                            where: {id: watchgroup.id},
-                            data: {name: "", fallbackName: `${users.slice(1, 6).map(u => u.details.username).join(", ")}...`}
-                        })
-                    ])
-                    const res = await users[0]?.agent.delete(`/v1/watchgroups/${watchgroup.id}/users/${users[2]?.details.id}`)
-                    expect(res?.status).toBe(200)
-                    const fbNameResArr = res?.body.data.watchgroup.fallbackName.split(", ")
-                    expect(fbNameResArr).toHaveLength(5)
-                    expect(fbNameResArr).toEqual(expect.not.arrayContaining([users[2]?.details.username]))
-                    const lastWordArr = fbNameResArr.at(-1).split("")
-                    expect(lastWordArr.slice(lastWordArr.length-3, lastWordArr.length).join("")).toBe("...")
-
-                    const user = await prisma.watchGroupUser.findUnique({
-                        where: {watchGroupId_userId: {
-                            userId: users[2]?.details.id as number,
-                            watchGroupId: watchgroup.id
-                        }}
-                    })
-                    expect(user).toBeNull()
-                })
+        test("admin removes another admin that has not accepted the invite", async () => {
+            await prisma.watchGroupUser.updateMany({
+                where: {userId: users[1]?.details.id as number},
+                data: {accepted: false}
             })
-            describe("5 members", () => {
-                beforeEach(async () => {
-                    await Promise.all([
-                        prisma.watchGroupUser.createMany({
-                            data: users.filter(u => u.details.id != users[0]?.details.id).map((u, i) => {
-                                return {
-                                    userId: u.details.id,
-                                    isAdmin: i == 0 ? true : false,
-                                    watchGroupId: watchgroup.id
-                                }
-                            }).slice(0, 4)
-                        }),
-                        prisma.watchGroup.update({
-                            where: {id: watchgroup.id},
-                            data: {name: "", fallbackName: `${users.slice(0, 5).map(u => u.details.username).join(", ")}`}
-                        })
-                    ])
-                })
-
-                test("admin removes a member", async () => {
-                    const res = await users[0]?.agent.delete(`/v1/watchgroups/${watchgroup.id}/users/${users[2]?.details.id}`)
-                    expect(res?.status).toBe(200)
-                    
-                    const user = await prisma.watchGroupUser.findUnique({
-                        where: {watchGroupId_userId: {
-                            userId: users[2]?.details.id as number,
-                            watchGroupId: watchgroup.id
-                        }}
-                    })
-                    
-                    expect(user).toBeNull()
-                    expect(res?.body.data.watchgroup.fallbackName.split(", ")).toEqual(expect.not.arrayContaining([users[2]?.details.username]))
-                })
+            const res = await users[0]?.agent.delete(`/v1/watchgroups/${watchgroup.id}/users/${users[1]?.details.id}`)
+            expect(res?.status).toBe(200)
+            const user = await prisma.watchGroupUser.findUnique({
+                where: {watchGroupId_userId: {
+                    userId: users[1]?.details.id as number,
+                    watchGroupId: watchgroup.id
+                }}
             })
+            expect(user).toBeNull()
+        })
+        
+        test("member removes a member", async () => {
+            const res = await users[2]?.agent.delete(`/v1/watchgroups/${watchgroup.id}/users/${users[3]?.details.id}`)
+            expect(res?.status).toBe(403)
+            const user = await prisma.watchGroupUser.findUnique({
+                where: {watchGroupId_userId: {
+                    userId: users[3]?.details.id as number,
+                    watchGroupId: watchgroup.id
+                }}
+            })
+            expect(user).not.toBeNull()
+        })
+
+        test("member leaves the group", async () => {
+            const res = await users[2]?.agent.delete(`/v1/watchgroups/${watchgroup.id}`)
+            expect(res?.status).toBe(200)
+            const user = await prisma.watchGroupUser.findUnique({
+                where: {watchGroupId_userId: {
+                    userId: users[2]?.details.id as number,
+                    watchGroupId: watchgroup.id
+                }}
+            })
+            expect(user).toBeNull()
         })
     })
 
@@ -639,7 +454,8 @@ describe("watchgroup read and updates", () => {
                 await prisma.watchGroupUser.create({
                     data: { 
                         watchGroupId: watchgroup.id, 
-                        userId: users[1]?.details.id as number 
+                        userId: users[1]?.details.id as number,
+                        accepted: true
                     }
                 })
             })
@@ -650,6 +466,14 @@ describe("watchgroup read and updates", () => {
                         userId: users[1]?.details.id as number 
                     }}
                 })
+            })
+
+            test("admin, not accepted", async () => {
+                await prisma.watchGroupUser.updateMany({where: {userId: users[1]?.details.id as number}, data: {accepted: false, isAdmin: true}})
+                const res = await users[1]?.agent.post(`/v1/watchgroups/${watchgroup.id}/movies`)
+                    .send({id: TmdbMockPayloads.movieDetails.id})
+                expect(res?.status).toBe(403)
+                await prisma.watchGroupUser.updateMany({where: {userId: users[1]?.details.id as number}, data: {accepted: true, isAdmin: false}})
             })
 
             test("non-admin", async () => {
@@ -790,13 +614,7 @@ describe("watchgroup read and updates", () => {
             expect(wg?.series[0]).toBeFalsy()
         })
     })
-
-    /* 
-        note: there is a loophole where user A with no connection to a user B can 
-        view a user B's watchlist by adding user B to a watchgroup.
-        
-        todo: add watchgroup requests. put off for now since this proj taking too long =~=
-    */
+    
     describe("compare movie/series ratings", () => {
         beforeAll(async () => {
             await prisma.watchGroup.update({where: {id: watchgroup.id},
@@ -809,8 +627,17 @@ describe("watchgroup read and updates", () => {
                         .filter((_s, i) => i < series.length-2)
                         .map(s => {return {id: s.id}}) 
                     },
+                    // users[0] = creator
+                    // users[1] = invited, not accepted
+                    // users[..i] = accepted
+                    // users[last] = not invited
                     users: { createMany: { data: 
-                        users.filter((_u, i) => i != 0 && i != users.length - 1).map(u => {return {userId: u.details.id}})
+                        users.filter((_u, i) => i != 0 && i != users.length - 1).map((u, i) => {
+                            return {
+                                userId: u.details.id,
+                                accepted: i == 0 ? false : true
+                            }
+                        })
                     }}
                 }
             })
@@ -828,7 +655,7 @@ describe("watchgroup read and updates", () => {
             ])
         })
 
-        test("pagination", async () => {
+        test("shape and pagination", async () => {
             const res = await users[0]?.agent.get(`/v1/watchgroups/${watchgroup.id}`)
             expect(res?.status).toBe(200)
             expect(res?.body.data.movies).toEqual(expect.any(Array))
@@ -860,6 +687,19 @@ describe("watchgroup read and updates", () => {
                     s.users.forEach((u: any) => { expect(u.rating).toEqual(Number(u.username.at(-1)) + 1) })
             })
 
+            // shouldn't include non members and users who haven't accepted yet
+            expect(res?.body.data.movies[0].users).toHaveLength(users.length-2)
+            res?.body.data.movies[0].users.forEach((u: any) => {
+                users.filter((_u, i) => i == 1 || i == users.length - 1).map((u) => u.details.id).forEach(filteredIds => {
+                    expect(u.id).not.toBe(filteredIds)
+                })
+            })
+            res?.body.data.series[0].users.forEach((u: any) => {
+                users.filter((_u, i) => i == 1 || i == users.length - 1).map((u) => u.details.id).forEach(filteredIds => {
+                    expect(u.id).not.toBe(filteredIds)
+                })
+            })
+
             const searchParam = new URLSearchParams([
                 ["lastMovieId", res?.body.data.movies[res?.body.data.movies.length-1].id],
                 ["lastSeriesId", res?.body.data.series[res?.body.data.series.length-1].id]
@@ -875,7 +715,7 @@ describe("watchgroup read and updates", () => {
                 expect(res?.body.data.series).toEqual(expect.not.arrayContaining([paginatedSeries]))
             })
 
-            // see beforeall of this describe block
+            // see beforeAll of this describe block
             movies.filter((_m, i) => i >= movies.length-2).forEach(m => {
                 expect([
                     // oxlint-disable-next-line no-unsafe-optional-chaining
@@ -910,5 +750,9 @@ describe("watchgroup read and updates", () => {
             expect(res?.status).toBe(404)
         })
 
+        test("non-accepted read", async () => {
+            const res = await users[1]?.agent.get(`/v1/watchgroups/${watchgroup.id}`)
+            expect(res?.status).toBe(403)
+        })
     })
 })

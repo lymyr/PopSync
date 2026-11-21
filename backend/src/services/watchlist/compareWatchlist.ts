@@ -53,8 +53,9 @@ class RawQueries {
             ${ froms.watchgroupId ?
                 `
                     WITH users_from_watch_group AS (
-                        SELECT wg_user.user_id FROM watch_group_user AS wg_user 
-                            WHERE wg_user.watch_group_id = ${froms.watchgroupId}
+                        SELECT wg_user.user_id FROM watch_group_user AS wg_user WHERE 
+                            wg_user.watch_group_id = ${froms.watchgroupId} AND
+                            wg_user.accepted = true
                     )
                 ` : ""
             }
@@ -121,8 +122,9 @@ class RawQueries {
             ${ froms.watchgroupId ?
                 `
                     WITH users_from_watch_group AS (
-                        SELECT wg_user.user_id FROM watch_group_user AS wg_user 
-                            WHERE wg_user.watch_group_id = ${froms.watchgroupId}
+                        SELECT wg_user.user_id FROM watch_group_user AS wg_user WHERE 
+                            wg_user.watch_group_id = ${froms.watchgroupId} AND
+                            wg_user.accepted = true
                     )
                 ` : ""
             }

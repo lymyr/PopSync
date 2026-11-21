@@ -188,7 +188,6 @@ model WatchListSeries {
 model WatchGroup {
   id           Int              @id @default(autoincrement())
   name         String
-  fallbackName String           @map("fallback_name")
   users        WatchGroupUser[]
   series       Series[]
   movies       Movie[]
@@ -198,10 +197,11 @@ model WatchGroup {
 
 model WatchGroupUser {
   watchGroupId Int        @map("watch_group_id")
-  watchGroup   WatchGroup @relation(fields: [watchGroupId], references: [id])
+  watchGroup   WatchGroup @relation(fields: [watchGroupId], references: [id], onDelete: Cascade)
   userId       Int        @map("user_id")
   user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   isAdmin      Boolean    @default(false) @map("is_admin")
+  accepted     Boolean    @default(false)
 
   @@id([watchGroupId, userId])
   @@map("watch_group_user")

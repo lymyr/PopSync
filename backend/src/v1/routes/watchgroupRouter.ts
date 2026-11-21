@@ -2,7 +2,7 @@ import { Router } from "express";
 import isAuth from "../../middleware/auth/isAuth.ts";
 import WatchgroupValidation from "../../middleware/validation/WatchgroupValidation.ts";
 import { throwerHelper } from "../../middleware/validation/Validation.ts";
-import leaveWatchgroup, { addMovieToWatchgroup, addSeriesToWatchgroup, addUserToWatchgroup, compareMedia, createWatchgroup, deleteUserFromWatchgroup, removeMovieFromWatchgroup, removeSeriesFromWatchgroup } from "../controllers/watchgroupController.ts";
+import leaveWatchgroup, { acceptWatchgroupInvite, addMovieToWatchgroup, addSeriesToWatchgroup, addUserToWatchgroup, compareMedia, createWatchgroup, deleteUserFromWatchgroup, rejectWatchgroupInvite, removeMovieFromWatchgroup, removeSeriesFromWatchgroup } from "../controllers/watchgroupController.ts";
 import WatchListValidation from "../../middleware/validation/WatchListValidation.ts";
 
 const watchgroupRouter = Router()
@@ -28,6 +28,16 @@ watchgroupRouter.get("/:id",
     compareMedia
 )
 
+watchgroupRouter.put("/:id/invite",
+     WatchgroupValidation.id(),
+    acceptWatchgroupInvite
+)
+
+watchgroupRouter.delete("/:id/invite",
+    WatchgroupValidation.id(),
+    rejectWatchgroupInvite
+)
+
 watchgroupRouter.post("/:id/users",
     WatchgroupValidation.members,
     WatchgroupValidation.isAdmin,
@@ -35,7 +45,7 @@ watchgroupRouter.post("/:id/users",
     addUserToWatchgroup
 )
 
-watchgroupRouter.delete("/:id/users", 
+watchgroupRouter.delete("/:id", 
     WatchgroupValidation.id(),
     throwerHelper,
     leaveWatchgroup
