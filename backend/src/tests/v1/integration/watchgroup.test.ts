@@ -125,11 +125,14 @@ afterAll(async () => {
     ])
 })
 
+// REVISE
 describe("watchgroup creation", () => {
     afterEach(async () => {
         await prisma.watchGroupUser.deleteMany()
         await prisma.watchGroup.deleteMany()
     })
+
+    test.todo("watchgroup request")
 
     test("creates watchgroup with name and initial members", async () => {
         const res = await users[0]?.agent.post("/v1/watchgroups")
@@ -237,18 +240,17 @@ describe("watchgroup creation", () => {
             const lastThreeChars = lastWordArr.slice(lastWordArr.length-3).join("")
             expect(lastThreeChars).toBe("...")
         })
-    })
-    
 
-    test("create watch group without name and initial members", async () => {
-        const res = await users[0]?.agent.post("/v1/watchgroups")
-            .send({
-                members: [],
-                name: ""
-            })
-        expect(res?.status).toBe(201)
-        expect(res?.body.data.name).toBe("")
-        expect(res?.body.data.fallbackName).toBe(users[0]?.details.username)
+        test("no initial members", async () => {
+            const res = await users[0]?.agent.post("/v1/watchgroups")
+                .send({
+                    members: [],
+                    name: ""
+                })
+            expect(res?.status).toBe(201)
+            expect(res?.body.data.name).toBe("")
+            expect(res?.body.data.fallbackName).toBe(users[0]?.details.username)
+        })
     })
 })
 
@@ -799,8 +801,14 @@ describe("watchgroup read and updates", () => {
         beforeAll(async () => {
             await prisma.watchGroup.update({where: {id: watchgroup.id},
                 data: {
-                    movies: { connect: movies.map(m => {return {id: m.id}}) },
-                    series: { connect: series.map(s => {return {id: s.id}}) },
+                    movies: { connect: movies
+                        .filter((_m, i) => i < movies.length-2)
+                        .map(m => {return {id: m.id}}) 
+                    },
+                    series: { connect: series
+                        .filter((_s, i) => i < series.length-2)
+                        .map(s => {return {id: s.id}}) 
+                    },
                     users: { createMany: { data: 
                         users.filter((_u, i) => i != 0 && i != users.length - 1).map(u => {return {userId: u.details.id}})
                     }}
@@ -858,13 +866,31 @@ describe("watchgroup read and updates", () => {
             ])
 
             const paginatedRes = await users[0]?.agent.get(`/v1/watchgroups/${watchgroup.id}?${searchParam.toString()}`)
-            expect(paginatedRes?.body.data.movies).toHaveLength(movies.length-20)
-            expect(paginatedRes?.body.data.series).toHaveLength(series.length-20)
+            expect(paginatedRes?.body.data.movies).toHaveLength(movies.length-20-2)
+            expect(paginatedRes?.body.data.series).toHaveLength(series.length-20-2)
             paginatedRes?.body.data.movies.forEach((movie: any) => {
                 expect(res?.body.data.movies).toEqual(expect.not.arrayContaining([movie]))
             })
             paginatedRes?.body.data.series.forEach((paginatedSeries: any) => {
                 expect(res?.body.data.series).toEqual(expect.not.arrayContaining([paginatedSeries]))
+            })
+
+            // see beforeall of this describe block
+            movies.filter((_m, i) => i >= movies.length-2).forEach(m => {
+                expect([
+                    // oxlint-disable-next-line no-unsafe-optional-chaining
+                    ...paginatedRes?.body.data.movies.map((m: any) => {return {id: m.id}}), 
+                    // oxlint-disable-next-line no-unsafe-optional-chaining
+                    ...res?.body.data.movies.map((m: any) => {return {id: m.id}})
+                ]).toEqual(expect.not.arrayContaining([{id: m.id}]))
+            })
+            series.filter((_s, i) => i >= movies.length-2).forEach(s => {
+                expect([
+                    // oxlint-disable-next-line no-unsafe-optional-chaining
+                    ...paginatedRes?.body.data.series.map((s: any) => s.id), 
+                    // oxlint-disable-next-line no-unsafe-optional-chaining
+                    ...res?.body.data.series.map((s: any) => s.id)
+                ]).toEqual(expect.not.arrayContaining([s.id]))
             })
         })
 

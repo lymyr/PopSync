@@ -91,6 +91,13 @@ class RawQueries {
             FROM movie AS m
             INNER JOIN watchlist_movie AS wlm ON 
                 m.id = wlm.movie_id 
+                ${froms.watchgroupId ? 
+                    `AND m.id IN (
+                        SELECT wg."A" FROM "_MovieToWatchGroup" AS wg
+                            WHERE wg."B" = ${froms.watchgroupId}
+                    )` :
+                    ""
+                }
             WHERE
                 wlm.user_id IN (${froms.watchgroupId ? 
                     "SELECT users_from_watch_group.user_id FROM users_from_watch_group" 
@@ -152,6 +159,13 @@ class RawQueries {
             FROM series AS s
             INNER JOIN watchlist_series AS wls ON 
                 s.id = wls.series_id
+                ${froms.watchgroupId ? 
+                    `AND s.id IN (
+                        SELECT wg."A" FROM "_SeriesToWatchGroup" AS wg
+                            WHERE wg."B" = ${froms.watchgroupId}
+                    )` :
+                    ""
+                }
             WHERE
                 wls.user_id IN (${froms.watchgroupId ? 
                     "SELECT users_from_watch_group.user_id FROM users_from_watch_group"
