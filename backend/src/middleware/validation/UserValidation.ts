@@ -13,7 +13,8 @@ export class UserValidation extends Validation {
         .notEmpty().withMessage("please input a username")
         .not().matches(/[-_.]{2,}/g).withMessage("hypens (-), underscores (_), and periods (.) should not be next to each other")
         .not().matches(/^[-_.]|[-_.]$/g).withMessage("usernames should not start or end with hypens (-), underscores (_), and periods (.)")
-        .isAlphanumeric(undefined, { ignore: '_-.' }).withMessage("username can only contain alphanumeric values, hypens (-), underscores (_), and periods (.)")      
+        .isAlphanumeric(undefined, { ignore: '_-.' }).withMessage("username can only contain alphanumeric values, hypens (-), underscores (_), and periods (.)")
+        .custom((val: string) => val.length >= 6 ? (val.toLowerCase().slice(0, 7) == "guest-" ? false : true) : true).withMessage("you are not allowed to use 'guest-' at the start of your username")
 
     static password = body("password").notEmpty().withMessage("Please input a password").isString()
         .isStrongPassword({
