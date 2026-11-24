@@ -58,8 +58,14 @@ export async function register(req:Request<{}, {}, Register>, res:Response) {
     res.sendStatus(201)
 }
 
-export async function login(_req:Request, res:Response) {
-    res.sendStatus(200)
+export async function login(req:Request, res:Response) {
+    if (req.user) {
+        // oxlint-disable-next-line no-unused-vars
+        const {password, ...data} = req.user
+        return res.send({data})
+    }
+    else 
+        throw new Error("req.user is undefined")
 }
 
 export async function logout(req:Request, res:Response) {

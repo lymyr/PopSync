@@ -63,6 +63,7 @@ h1, h2, h3, h4, h5, h6 {
   --main-color-dark: rgb(61, 40, 62);
   --secondary-color: rgb(45, 46, 46);
   --secondary-color-light: rgb(62, 62, 63);
+  --error-color: rgb(201, 113, 113);
   
   --max-width: 1920px;
   --inline-space: 16px;
@@ -121,13 +122,17 @@ button {
   border-radius: 4px;
   color: var(--font-color);
   border: none;
-  cursor: pointer;
 
   will-change: background-color;
   transition: background-color 200ms ease-out;
 }
 
-button:hover {
+button:disabled {
+  opacity: 0.7;
+}
+
+button:not(:disabled):hover {
+  cursor: pointer;
   background-color: var(--secondary-color-light);
 }
 
@@ -137,8 +142,13 @@ button:hover {
   font-weight: 600;
 }
 
-.actionBtn:hover {
+.actionBtn:not(:disabled):hover {
   background-color: var(--main-color-light);
+}
+
+/* todo: update to container in the future with icon for accessibility */
+.error-text {
+  color: var(--error-color);
 }
 
 .profile {

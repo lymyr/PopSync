@@ -2,11 +2,11 @@ import { Router } from "express";
 import { createGuest, deleteAccount, getUsers, login, logout, register } from "../controllers/userController.ts";
 import { UserValidation } from "../../middleware/validation/UserValidation.ts";
 import { throwerHelper } from "../../middleware/validation/Validation.ts";
-import passport from "../../lib/passport.ts";
 import SearchQueryValidation from "../../middleware/validation/SearchQueryValidation.ts";
 import type { SearchQuery } from "../../middleware/validation/SearchQueryValidation.ts";
 import isAuth from "../../middleware/auth/isAuth.ts";
 import watchlistRouter from "./user-subroutes/watchlistRouter.ts";
+import handleLogin from "../../middleware/auth/handleLogin.ts";
 
 const userRouter = Router()
 
@@ -17,7 +17,7 @@ userRouter.post("/",
 )
 
 userRouter.post("/authenticate",
-    passport.authenticate("local"),
+    handleLogin,
     login
 )
 

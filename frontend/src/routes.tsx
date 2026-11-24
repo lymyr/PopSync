@@ -8,45 +8,52 @@ import Profile from "./features/profile/pages/Profile";
 import WatchList from "./features/watchList/pages/WatchList";
 import WatchGroup from "./features/watchGroup/pages/WatchGroup";
 import SearchResults from "./features/search/pages/SearchResults";
+import App from "./App";
 
 const routes: RouteObject[] = [
     {
         path: "/",
-        element: <Timeline />,
+        element: <App />,
         children: [
             {
-                path: "/posts/:postId",
-                element: <PostDialog />
+                path: "/",
+                element: <Timeline />,
+                children: [
+                    {
+                        path: "/posts/:postId",
+                        element: <PostDialog />
+                    }
+                ]
+            },
+            {
+                path: "/login",
+                element: <Login />
+            },
+            {
+                path: "/register",
+                element: <Register />
+            },
+            {
+                path: "/connections",
+                element: <Connection />
+            },
+            {
+                path: "/profile",
+                element: <Profile />
+            },
+            {
+                path: "/watch-list",
+                element: <WatchList />
+            },
+            {
+                path: "/watch-group",
+                element: <WatchGroup />
+            },
+            {
+                path: "/search/:filter",
+                element: <SearchResults />
             }
         ]
-    },
-    {
-        path: "/login",
-        element: <Login />
-    },
-    {
-        path: "/register",
-        element: <Register />
-    },
-    {
-        path: "/connections",
-        element: <Connection />
-    },
-    {
-        path: "/profile",
-        element: <Profile />
-    },
-    {
-        path: "/watch-list",
-        element: <WatchList />
-    },
-    {
-        path: "/watch-group",
-        element: <WatchGroup />
-    },
-    {
-        path: "/search/:filter",
-        element: <SearchResults />
     }
 ]
 

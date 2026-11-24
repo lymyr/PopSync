@@ -111,6 +111,7 @@ describe("updating/accepting connections", () => {
         expect(user?.sentConnection[0]?.senderId).toBe(user1.details.id)
         expect(user?.sentConnection[0]?.receiverId).toBe(user2.details.id)
         expect(user?.sentConnection[0]?.status).toBe(expectedStatus)
+        await prisma.connection.deleteMany()
     })
 
     test("user with 'id' doesn't exist", async () => {
@@ -128,6 +129,7 @@ describe("read and delete connections", () => {
             tasks.push(handleConnection(user1, randomUsers[i]?.id, "add"))
         }
         await Promise.all([...tasks, handleConnection(user1, user2, "add")])
+        await handleConnection(user2, user1, "accept")
     })
 
     test("returns all accepted connections", async () => {

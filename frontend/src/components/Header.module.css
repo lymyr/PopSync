@@ -147,8 +147,7 @@
         --icon-size: 32px;
         min-height: 100vh;
         position: relative;
-
-        --spacing-inline: 24px;
+        min-width: 240px;
     }
 
     .container {
@@ -170,7 +169,7 @@
         flex-direction: column;
         width: 100%;
 
-        padding-inline: var(--spacing-inline);
+        padding-left: var(--inline-space);
     }
     
     .container > div:first-child > div:first-child {
@@ -186,6 +185,7 @@
     }
 
     .container ul {
+        margin-left: var(--inline-space);
         align-items: start;
         flex-direction: column;
     }
@@ -195,7 +195,7 @@
         display: flex;
         align-items: center;
         gap: 16px;
-        padding-inline: var(--spacing-inline);
+        padding-inline: var(--inline-space);
         border-radius: 12px;
     }
 
@@ -210,12 +210,11 @@
     }
 
     .container .selected {
-        border-bottom: none;
+        border-bottom: 1px solid transparent;
     }
 
-    .container .selected p {
-        font-weight: 700;
-        color: var(--main-color)
+    .container .selected a {
+        color: var(--main-color);
     }
 
     .selected svg {
