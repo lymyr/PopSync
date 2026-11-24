@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { deleteAccount, getUsers, login, register } from "../controllers/userController.ts";
+import { createGuest, deleteAccount, getUsers, login, logout, register } from "../controllers/userController.ts";
 import { UserValidation } from "../../middleware/validation/UserValidation.ts";
 import { throwerHelper } from "../../middleware/validation/Validation.ts";
 import passport from "../../lib/passport.ts";
@@ -21,6 +21,10 @@ userRouter.post("/authenticate",
     login
 )
 
+userRouter.post("/guests",
+    createGuest
+)
+
 userRouter.use(isAuth)
 
 userRouter.get("/", 
@@ -31,6 +35,10 @@ userRouter.get("/",
 
 userRouter.delete("/",
     deleteAccount
+)
+
+userRouter.delete("/authenticate",
+    logout
 )
 
 userRouter.use("/:userId/watchlist", watchlistRouter)

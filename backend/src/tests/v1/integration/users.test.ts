@@ -146,6 +146,8 @@ describe("account deletion", () => {
                 .send({content: "good review"}),
             user.agent.post(`/v1/reviews/${undeletedReview.body.data.id}/comments`)
                 .send({content: "no reply"}),
+            user.agent.post(`/v1/reviews/${undeletedReview.body.data.id}/comments`)
+                .send({content: "another no reply"}),
         ])
         await undeletedUser.agent.post(`/v1/reviews/${undeletedReview.body.data.id}/comments/${commentsRes[0].body.data.id}`)
             .send({content: "thanks"})

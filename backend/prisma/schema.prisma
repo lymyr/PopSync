@@ -22,11 +22,13 @@ model Session {
 }
 
 model User {
-  id          Int    @id @default(autoincrement())
-  username    String @unique
+  id          Int      @id @default(autoincrement())
+  username    String   @unique @default(uuid())
   password    String
-  description String @default("")
-  pfpPath     String @map("pfp_path")
+  description String   @default("")
+  pfpPath     String   @default("") @map("pfp_path")
+  dateCreated DateTime @default(now()) @map("date_created")
+  isGuest     Boolean  @default(false) @map("is_guest")
 
   reviews  Review[]
   comments Comment[]
@@ -186,11 +188,11 @@ model WatchListSeries {
 }
 
 model WatchGroup {
-  id           Int              @id @default(autoincrement())
-  name         String
-  users        WatchGroupUser[]
-  series       Series[]
-  movies       Movie[]
+  id     Int              @id @default(autoincrement())
+  name   String
+  users  WatchGroupUser[]
+  series Series[]
+  movies Movie[]
 
   @@map("watch_group")
 }

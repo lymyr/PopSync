@@ -13,7 +13,10 @@ if (!process.env.SESSION_SECRET) {
 }
 
 const app = express()
-app.use(cors())
+app.use(cors({
+    origin: process.env.NODE_ENV ? "*" : process.env.ALLOWED_ORIGINS?.split(","),
+    optionsSuccessStatus: 200
+}))
 app.use(express.json())
 app.use(session({
     cookie: {
