@@ -138,7 +138,7 @@ describe("likes", () => {
                 users[1]?.agent.post(`/v1/reviews/${review.id}/likes`),
             ])
             expect(res[0]?.status).toBe(201)
-            expect(res[1]?.status).toBe(401)
+            expect(res[1]?.status).toBe(403)
         })
 
         test("authorized dislikes", async () => {
@@ -150,7 +150,7 @@ describe("likes", () => {
             ])
 
             expect(res[0]?.status).toBe(200)
-            expect(res[1]?.status).toBe(401)
+            expect(res[1]?.status).toBe(403)
         })
     })
     
@@ -357,7 +357,7 @@ describe("comments", () => {
                 .send({ content: "my comment" })
             expect(commentRes?.status).toBe(201)
             const unauthDel = await users[1]?.agent.delete(`/v1/reviews/${review.id}/comments/${commentRes?.body.data.id}`)
-            expect(unauthDel?.status).toBe(401)
+            expect(unauthDel?.status).toBe(403)
         })
         test("updating comment of another user", async () => {
             if (users.length < 2)
@@ -369,7 +369,7 @@ describe("comments", () => {
             const updateRes = await users[1]?.agent.put(`/v1/reviews/${review.id}/comments/${createRes?.body.data.id}`).send({
                 content: "fixed typo"
             })
-            expect(updateRes?.status).toBe(401)
+            expect(updateRes?.status).toBe(403)
         })
     })
 
@@ -388,7 +388,7 @@ describe("comments", () => {
                 users[1]?.agent.post(`/v1/reviews/${review.id}/likes`).send({content: "hello"}),
             ])
             expect(res[0]?.status).toBe(201)
-            expect(res[1]?.status).toBe(401)
+            expect(res[1]?.status).toBe(403)
         })
     })
 })

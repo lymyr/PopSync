@@ -42,7 +42,7 @@ export default class WatchListValidation extends Validation {
     static isOwner = this.userId().bail().custom((userId, meta) => {
         const req = meta.req as Request
         if (userId !== req.user?.id) {
-            req.errorStatusCode = 401
+            req.errorStatusCode = 403
             return false
         }
         return true
@@ -70,7 +70,7 @@ export default class WatchListValidation extends Validation {
             }
         })
         if (!connection) {
-            req.errorStatusCode = 401
+            req.errorStatusCode = 403
             throw new Error("you do not have access to this user's watchlist")
         }
     })

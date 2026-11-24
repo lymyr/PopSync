@@ -172,12 +172,12 @@ test("compare watchlist", async () => {
 describe("unauthorized", () => {
     test("watchlist retrieval with no connection", async () => {
         const res = await users[0]?.agent.get(`/v1/users/${users[3]?.details.id}/watchlist`)
-        expect(res?.status).toBe(401)
+        expect(res?.status).toBe(403)
     })
 
     test("retrieves watchlist with pending connection", async () => {
         const res = await users[0]?.agent.get(`/v1/users/${users[2]?.details.id}/watchlist`)
-        expect(res?.status).toBe(401)
+        expect(res?.status).toBe(403)
     })
 })
 

@@ -197,7 +197,7 @@ describe("movies", () => {
                     hasWatched: false,
                     rating: 0
                 })
-            expect(res.status).toBe(401)
+            expect(res.status).toBe(403)
         })
 
         test("update watchlist", async () => {
@@ -215,7 +215,7 @@ describe("movies", () => {
                     hasWatched: true,
                     rating: 10
                 })
-            expect(res.status).toBe(401)
+            expect(res.status).toBe(403)
         })
 
         test("remove watchlist", async () => {
@@ -229,7 +229,7 @@ describe("movies", () => {
 
             const res = await user.agent.delete(`/v1/users/${otherUser.details.id}/watchlist/movies`)
                 .send({ id: TmdbMockPayloads.movieDetails.id })
-            expect(res.status).toBe(401)
+            expect(res.status).toBe(403)
         })
     })
 
@@ -405,7 +405,7 @@ describe("series", () => {
                     hasWatched: false,
                     rating: 0
                 })
-            expect(res.status).toBe(401)
+            expect(res.status).toBe(403)
         })
 
         test("update watchlist", async () => {
@@ -423,7 +423,7 @@ describe("series", () => {
                     hasWatched: true,
                     rating: 10
                 })
-            expect(res.status).toBe(401)
+            expect(res.status).toBe(403)
         })
 
         test("remove watchlist", async () => {
@@ -437,7 +437,7 @@ describe("series", () => {
 
             const res = await user.agent.delete(`/v1/users/${otherUser.details.id}/watchlist/series`)
                 .send({ id: TmdbMockPayloads.seriesDetails.id })
-            expect(res.status).toBe(401)
+            expect(res.status).toBe(403)
         })
     })
     

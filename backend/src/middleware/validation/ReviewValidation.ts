@@ -83,7 +83,7 @@ export default class ReviewValidation extends Validation {
 
     static isAuthor = this.id().bail().custom((_id, meta) => {
         const req = meta.req as Request
-        req.errorStatusCode = 401
+        req.errorStatusCode = 403
         return req.user?.id === req.review?.authorId
     }).withMessage("please do not touch other user's review")
 
@@ -117,7 +117,7 @@ export default class ReviewValidation extends Validation {
         })
 
         if (!connection) {
-            req.errorStatusCode = 401
+            req.errorStatusCode = 403
             throw new Error("You are not allowed to view this review")
         }
     })

@@ -35,7 +35,7 @@ export default class commentValidation extends Validation {
             }
 
             if ((req.method == "DELETE" || req.method == "PUT") && comment?.authorId !== req.user?.id) {
-                req.errorStatusCode = 401
+                req.errorStatusCode = 403
                 throw new Error("please don't touch other people's comments")
             }
 

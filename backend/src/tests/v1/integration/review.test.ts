@@ -363,7 +363,7 @@ describe("auth, read, deletes", () => {
                 rating: "3",
                 isPublic: false
             })
-        expect(res.status).toBe(401)
+        expect(res.status).toBe(403)
     })
 
     test("delete review", async () => {
@@ -383,7 +383,7 @@ describe("auth, read, deletes", () => {
 
     test("delete other user's review", async () => {
         const res = await user.agent.delete(`/v1/reviews/${friendReview.id}`)
-        expect(res.status).toBe(401)
+        expect(res.status).toBe(403)
         const prismaRes = await prisma.review.findFirst({where: {id: friendReview.id }})
         expect(prismaRes).not.toBeNull()
     })
@@ -424,7 +424,7 @@ describe("auth, read, deletes", () => {
         const friendReviewRes = await user.agent.get(`/v1/reviews/${friendReview.id}`)
         expect(friendReviewRes.status).toBe(200)
         const otherUserReviewRes = await user.agent.get(`/v1/reviews/${otherUserReview.id}`)
-        expect(otherUserReviewRes.status).toBe(401)
+        expect(otherUserReviewRes.status).toBe(403)
         await otherUser.agent.put(`/v1/reviews/${otherUserReview.id}`)
             .send({
                 ...otherUserReview,
@@ -440,7 +440,7 @@ describe("auth, read, deletes", () => {
         const friendReviewRes = await user.agent.get(`/v1/reviews/${friendReview.id}/comments`)
         expect(friendReviewRes.status).toBe(200)
         const otherUserReviewRes = await user.agent.get(`/v1/reviews/${otherUserReview.id}/comments`)
-        expect(otherUserReviewRes.status).toBe(401)
+        expect(otherUserReviewRes.status).toBe(403)
         await otherUser.agent.put(`/v1/reviews/${otherUserReview.id}`)
             .send({
                 ...otherUserReview,
