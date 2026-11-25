@@ -4,6 +4,7 @@ import styles from "./Register.module.css"
 import { useContext, useEffect, useState } from "react";
 import handleRegister from "../handlers/handleRegister";
 import UserContext from "../../../contexts/UserContext";
+import removeNullType from "../../../utils/removeNullType";
 
 export type RegisterError = 
     undefined |
@@ -25,10 +26,7 @@ export default function Register() {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<RegisterError>()
 
-    const userContext = useContext(UserContext)
-    if (userContext == null)
-        throw new Error("UserContext must be used within a provider")
-    const {user} = userContext
+    const {user} = removeNullType(useContext(UserContext))
     useEffect(() => {
         if (user != null)
             nav('/')

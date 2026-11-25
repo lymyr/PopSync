@@ -1,11 +1,12 @@
-import type { ReactNode, Ref } from "react";
+import type { ReactNode } from "react";
 import styles from "./Dialog.module.css"
+import type React from "react";
 
 interface props {
     headerText: string;
     children: ReactNode;
     dialogAttr?: React.HTMLAttributes<HTMLDialogElement>;
-    ref?: Ref<HTMLDialogElement>
+    ref?: React.RefObject<HTMLDialogElement | null>
 }
 
 export default function Dialog({
@@ -21,7 +22,12 @@ export default function Dialog({
             ref={ref}
         >
             <div className={styles.header}>
-                <button aria-label="close modal">X</button>
+                <button 
+                    aria-label="close modal"
+                    onClick={() => ref?.current?.close()}
+                >
+                    X
+                </button>
                 <h2>{headerText}</h2>
             </div>
             {children}

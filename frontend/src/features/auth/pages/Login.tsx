@@ -4,6 +4,7 @@ import styles from "./Login.module.css"
 import { useContext, useEffect, useState } from "react";
 import handleLogin from "../handlers/handleLogin";
 import UserContext from "../../../contexts/UserContext";
+import removeNullType from "../../../utils/removeNullType";
 
 export default function Login() {
     const [formData, setFormData] = useState({
@@ -14,11 +15,7 @@ export default function Login() {
     const nav = useNavigate()
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<undefined | string>()
-
-    const userContext = useContext(UserContext)
-    if (userContext == null)
-        throw new Error("UserContext must be used within a provider")
-    const {user, setUser} = userContext
+    const {user, setUser} = removeNullType(useContext(UserContext))
 
     useEffect(() => {
         if (user != null)

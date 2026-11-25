@@ -6,6 +6,7 @@ import type { SearchQuery } from "../../middleware/validation/SearchQueryValidat
 import { matchedData } from "express-validator"
 import type { Prisma } from "../../../generated/prisma/client.ts"
 import deleteAccountService from "../../services/users/deleteAccount.ts"
+import getGravatar from "../../utils/getGravatar.ts"
 
 export async function getUsers(req: Request<{}, {}, {}, SearchQuery>, res: Response) {
     const query = matchedData<SearchQuery>(req)
@@ -53,7 +54,7 @@ export async function register(req:Request<{}, {}, Register>, res:Response) {
         data: {
             username: req.body.username,
             password: hashed,
-            pfpPath: "",
+            pfpPath: getGravatar(req.body.username),
     }})
     res.sendStatus(201)
 }

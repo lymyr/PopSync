@@ -14,13 +14,18 @@ if (!process.env.SESSION_SECRET) {
 
 const app = express()
 app.use(cors({
-    origin: process.env.NODE_ENV ? "*" : process.env.ALLOWED_ORIGINS?.split(","),
-    optionsSuccessStatus: 200
+    origin: process.env.ALLOWED_ORIGINS?.split(","),
+    optionsSuccessStatus: 200,
+    credentials: true,
 }))
 app.use(express.json())
 app.use(session({
     cookie: {
-        maxAge: 7 * 24 * 60 * 60 * 1000
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+        // note: lax works in dev env with http. cookies will not be set if secure=false and sameSite=lax
+        secure: process.env.NODE_ENV ? false : true,
+        sameSite: process.env.NODE_ENV ? "lax" : "none",
+        httpOnly: true
     },
     secret: process.env.SESSION_SECRET,
     resave: false,
@@ -30,7 +35,7 @@ app.use(session({
         {
             // guarantees a clean up despite render free tier limits
             checkPeriod: 13 * 60 * 1000, 
-            dbRecordIdIsSessionId: true,
+            dbRecordIdIsSessionId: true
         }
     )
 }))

@@ -1,9 +1,13 @@
-import { useState } from "react"
+import { useContext, useState } from "react"
 import styles from "./ReviewForm.module.css"
 import AdaptiveTextArea from "../../../components/AdaptiveTextArea"
+import removeNullType from "../../../utils/removeNullType"
+import UserContext from "../../../contexts/UserContext"
 
 export default function ReviewForm() {
     const [content, setContent] = useState([""])
+
+    const {user} = removeNullType(useContext(UserContext))
 
     // todo: update this in future
     // const [selectedMedia, setSelectedMedia] = useState() 
@@ -13,7 +17,7 @@ export default function ReviewForm() {
             <div className={styles.postContainer}>
                 <img 
                     alt="your profile picture" 
-                    src="/defaultPfp.webp"
+                    src={user?.pfpPath}
                     className="profile"
                 />
                 <div>

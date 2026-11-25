@@ -1,5 +1,4 @@
 import type { NavigateFunction } from "react-router"
-import customFetch from "../../../utils/customFetch"
 import type { User } from "../../../contexts/UserContext"
 
 export default async function handleLogin(
@@ -14,9 +13,13 @@ export default async function handleLogin(
     setError(undefined)
     e.preventDefault()
     try {
-        const res = await customFetch("/v1/users/authenticate", {
+        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/v1/users/authenticate`, {
             method: "post", 
-            body: JSON.stringify(formData)
+            body: JSON.stringify(formData),
+            credentials: "include",
+            headers: {
+                "content-type": "application/json"
+            }
         })
         if (res.status == 200) {
             const json = await res.json()

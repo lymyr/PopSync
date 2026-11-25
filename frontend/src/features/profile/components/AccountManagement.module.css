@@ -1,0 +1,38 @@
+.container > ul {
+    padding: 0;
+    margin: 0;
+    list-style-type: none;
+    padding-top: calc(var(--content-padding) / 2);
+    padding-bottom: var(--content-padding);
+
+    display:flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.container li > button {
+    height: 2.3rem;
+}
+
+li:has(.logout) {
+    flex-grow: 1;
+}
+.container li > .logout {
+    width: 100%;
+    max-width: 30ch;
+}
+
+.delete {
+    font-size: 0.7rem;
+}
+
+/*
+    note: this must sync up with media query containing .container > div:first-child p
+    in Header.module.css
+*/
+@media screen and (max-width: 500px) {
+    .container li > .logout {
+        width: 100%;
+        max-width: 100%;
+    }
+}

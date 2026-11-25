@@ -1,5 +1,4 @@
 import type { NavigateFunction } from "react-router"
-import customFetch from "../../../utils/customFetch"
 import type { RegisterError } from "../pages/Register"
 
 export default async function handleRegister(
@@ -13,9 +12,12 @@ export default async function handleRegister(
     setLoading(true)
     setError(undefined)
     try {
-        const res = await customFetch("/v1/users", {
+        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/v1/users`, {
             method: "post", 
-            body: JSON.stringify(formData)
+            body: JSON.stringify(formData),
+            headers: {
+                "content-type": "application/json"
+            }
         })
         if (res.status == 201)
             nav("/login")

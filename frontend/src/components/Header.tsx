@@ -1,7 +1,9 @@
 import { Link, useLocation, useNavigate, useParams } from "react-router";
 import BrandLogo from "./BrandLogo";
 import styles from "./Header.module.css"
-import { useState } from "react";
+import { useContext, useState } from "react";
+import removeNullType from "../utils/removeNullType";
+import UserContext from "../contexts/UserContext";
 
 interface searchData {
     search: string;
@@ -12,6 +14,7 @@ export default function Header() {
     const loc = useLocation()
     const param = useParams()
     const path = loc.pathname.split('/')[1]
+    const {user} = removeNullType(useContext(UserContext))
 
     const initialSelect = param.filter == "series" || param.filter == "movies" || param.filter == "users" ? 
         param.filter : "series"
@@ -110,7 +113,7 @@ export default function Header() {
                         }>
                             <Link to="/profile">
                                 <div>
-                                    <img aria-label="Profile" src="/defaultPfp.webp" alt="Profile" className="profile"/>
+                                    <img aria-label="Profile" src={user?.pfpPath} alt="Profile" className="profile"/>
                                     <div className={styles.navLabel}>Profile</div>
                                 </div>
                             </Link>

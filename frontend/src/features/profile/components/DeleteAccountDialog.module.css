@@ -1,0 +1,36 @@
+.formContainer,
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    font-size: 1.15rem;
+}
+
+.container {
+    padding-inline: var(--inline-space);
+    padding-bottom: var(--content-padding);
+}
+
+.container > p {
+    flex-grow: 1;
+}
+
+.confirmationContainer input {
+    --size: 1rem;
+    height: var(--size);
+    width: var(--size);
+}
+.confirmationContainer label {
+    padding-left: 0.7rem;
+}
+
+.buttonsContainer {
+    display: flex;
+    gap: 8px;
+    justify-content: right;
+}
+
+.buttonsContainer button {
+    padding-block: 8px;
+    font-size: 1rem;
+}
