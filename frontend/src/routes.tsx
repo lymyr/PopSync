@@ -1,13 +1,13 @@
 import type { RouteObject } from "react-router";
-import Login from "./features/auth/pages/Login";
-import Register from "./features/auth/pages/Register";
-import Timeline from "./pages/Timeline";
-import Connection from "./features/connections/pages/Connection";
-import PostDialog from "./features/post/components/PostDialog";
-import Profile from "./features/profile/pages/Profile";
-import WatchList from "./features/watchList/pages/WatchList";
-import WatchGroup from "./features/watchGroup/pages/WatchGroup";
-import SearchResults from "./features/search/pages/SearchResults";
+import Login from "./pages/auth/Login";
+import Register from "./pages/auth/Register";
+import Timeline from "./pages/timeline/Timeline";
+import Connection from "./pages/connections/Connection";
+import PostDialog from "./components/posts/PostDialog";
+import Profile from "./pages/profile/Profile";
+import WatchList from "./pages/watchlist/WatchList";
+import WatchGroup from "./pages/watchGroup/WatchGroup";
+import SearchResults from "./pages/search/SearchResults";
 import App from "./App";
 
 const routes: RouteObject[] = [

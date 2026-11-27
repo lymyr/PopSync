@@ -1,5 +1,5 @@
 import type { NavigateFunction } from "react-router"
-import type { User } from "../../../contexts/UserContext"
+import type { User } from "../contexts/UserContext"
 
 export default async function handleLogin(
     e: React.SubmitEvent<HTMLFormElement>,

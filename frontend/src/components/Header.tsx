@@ -2,8 +2,8 @@ import { Link, useLocation, useNavigate, useParams } from "react-router";
 import BrandLogo from "./BrandLogo";
 import styles from "./Header.module.css"
 import { useContext, useState } from "react";
-import removeNullType from "../utils/removeNullType";
-import UserContext from "../contexts/UserContext";
+import removeNullType from "../features/auth/utils/removeNullType";
+import UserContext from "../features/auth/contexts/UserContext";
 
 export interface SearchData {
     search: string;

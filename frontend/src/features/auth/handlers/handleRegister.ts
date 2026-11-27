@@ -1,5 +1,5 @@
 import type { NavigateFunction } from "react-router"
-import type { RegisterError } from "../pages/Register"
+import type { RegisterError } from "../../../pages/auth/Register"
 
 export default async function handleRegister(
     e: React.SubmitEvent<HTMLFormElement>,

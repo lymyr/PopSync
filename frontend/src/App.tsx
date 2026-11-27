@@ -1,5 +1,5 @@
 import { Outlet, useNavigate } from "react-router";
-import UserContext, { type User } from "./contexts/UserContext";
+import UserContext, { type User } from "./features/auth/contexts/UserContext";
 import { useEffect, useState } from "react";
 
 export default function App() {
