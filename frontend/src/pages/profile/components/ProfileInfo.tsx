@@ -104,7 +104,7 @@ export default function ProfileInfo({userId} : {userId: number | string}) {
                     <SectionText text={profileState.error} /> :
                 profileState.loading ?
                     <SectionText text="Loading..." /> :
-                profileState.data &&
+                profileState.data ?
                 <>
                     <EditProfileDialog />
                     <div className={styles.coverPhoto}></div>
@@ -209,7 +209,8 @@ export default function ProfileInfo({userId} : {userId: number | string}) {
                             </div>
                         </div>
                     </section>
-                </>
+                </> :
+                <SectionText text="User not found." />
             }
             
         </div>
