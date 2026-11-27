@@ -153,7 +153,7 @@ describe("read and delete connections", () => {
     })
 
     // should be good enuf. no pagination for now
-    test.only("retrieve all pending connection requests", async () => {
+    test("retrieve all pending connection requests", async () => {
         const res = await user1.agent.get("/v1/connections/pending")
         expect(res.status).toBe(200)
         expect(res.body.data).toHaveLength(randomUsers.length - 1)
