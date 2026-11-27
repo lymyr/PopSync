@@ -12,7 +12,7 @@ describe("search users", async () => {
     let loggedUser: TestUser;
 
     beforeAll(async () => {
-        loggedUser = (await testUserGen(1, "kakarot"))[0] as TestUser
+        loggedUser = (await testUserGen(1, "a"))[0] as TestUser
         const usernames = [
             "ABC", "CBA", "Ant", "ant324", "bart", "ram", "tart", 
             "cart", "stark", "fart", "part", "larp", "carp", "kars",

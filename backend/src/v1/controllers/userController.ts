@@ -13,6 +13,12 @@ export async function getUsers(req: Request<{}, {}, {}, SearchQuery>, res: Respo
     const currentUser = req.user as NonNullable<typeof req.user>
     let opts: Prisma.UserFindManyArgs = {
         take: 10,
+        select: {
+            id: true, 
+            username: true,
+            pfpPath: true,
+            isGuest: true,
+        },
         where: { 
             AND: [
                 { 
@@ -23,9 +29,7 @@ export async function getUsers(req: Request<{}, {}, {}, SearchQuery>, res: Respo
                 },
                 {
                     NOT: {
-                        username: {
-                            contains: currentUser.username
-                        }
+                        username: currentUser.username
                     }
                 }
             ]
