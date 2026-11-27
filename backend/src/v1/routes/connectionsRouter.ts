@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { acceptConnection, addConnection, deleteConnection, getAcceptedConnections } from "../controllers/connectionController.ts";
+import { acceptConnection, addConnection, deleteConnection, getAcceptedConnections, getConnectionRequests } from "../controllers/connectionController.ts";
 import isAuth from "../../middleware/auth/isAuth.ts";
 import ConnectionValidation from "../../middleware/validation/ConnectionValidation.ts";
 import { throwerHelper } from "../../middleware/validation/Validation.ts";
@@ -9,6 +9,10 @@ connectionRouter.use(isAuth)
 
 connectionRouter.get("/",
     getAcceptedConnections
+)
+
+connectionRouter.get("/pending",
+    getConnectionRequests
 )
 
 connectionRouter.post("/:id", 

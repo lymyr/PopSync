@@ -1,7 +1,8 @@
-import { body, param, query } from "express-validator";
+import { body, query } from "express-validator";
 import Validation from "./Validation.ts";
 import { prisma } from "../../lib/prisma.ts";
 import type { Request } from "express";
+import { UserValidation } from "./UserValidation.ts";
 
 export interface BodyPayload {
     id: number;
@@ -38,8 +39,7 @@ export default class WatchListValidation extends Validation {
     static statusPayload = body("hasWatched").exists().withMessage("missing hasWatched in payload")
         .isBoolean().withMessage("hasWatched should be a boolean").toBoolean()
     
-    static userId = () => param("userId").isInt().withMessage("userId must be an integer").toInt()
-    static isOwner = this.userId().bail().custom((userId, meta) => {
+    static isOwner = UserValidation.userId().bail().custom((userId, meta) => {
         const req = meta.req as Request
         if (userId !== req.user?.id) {
             req.errorStatusCode = 403
@@ -48,7 +48,7 @@ export default class WatchListValidation extends Validation {
         return true
     }).withMessage("please do not touch other user's watchlist")
 
-    static canAccess = this.userId().bail().custom(async (id, meta) => {
+    static canAccess = UserValidation.userId().bail().custom(async (id, meta) => {
         const req = meta.req as Request
         const userId = req.user?.id as number
         if (id === req.user?.id)

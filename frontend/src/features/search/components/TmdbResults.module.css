@@ -1,0 +1,9 @@
+.container {
+    padding: 0;
+    list-style-type: none;
+
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 8px;
+}
+

@@ -1,0 +1,15 @@
+.container:has(.profile) {
+    padding: 0;
+    padding-top: var(--content-padding);
+    list-style-type: none;
+
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}

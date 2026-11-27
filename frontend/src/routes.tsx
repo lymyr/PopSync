@@ -38,7 +38,7 @@ const routes: RouteObject[] = [
                 element: <Connection />
             },
             {
-                path: "/profile",
+                path: "/profile/:id",
                 element: <Profile />
             },
             {

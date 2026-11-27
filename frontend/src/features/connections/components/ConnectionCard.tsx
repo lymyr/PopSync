@@ -1,31 +1,38 @@
+import { Link } from "react-router";
+import type { Connection } from "../pages/Connection";
 import styles from "./ConnectionCard.module.css"
 
-export default function ConnectionCard() {
-    const isRequest = true;
+interface Props {
+    userDetails: Connection["sender"] | Connection["receiver"]
+    isRequest: boolean;
+}
 
+export default function ConnectionCard({userDetails, isRequest}: Props) {
     return (
-        <div className={styles.container}>
-            <img
-                src="/defaultPfp.webp"
-                alt="profile picture"
-            />
-            <div>
+        <Link to={`/profile/${userDetails.id}`}>
+            <div className={styles.container}>
+                <img
+                    src={userDetails.pfpPath}
+                    alt="profile picture"
+                />
                 <div>
-                    <p>very very very very very very very very long username</p>
+                    <div>
+                        <p>{userDetails.username}</p>
+                        {
+                            isRequest &&
+                                <p>Sept 99, 2359</p>
+                        }
+                    </div>
                     {
                         isRequest &&
-                            <p>Sept 99, 2359</p>
+                            <div className={styles.btnContainer}>
+                                <button>Reject</button>
+                                <button>Accept</button>
+                            </div>
                     }
                 </div>
-                {
-                    isRequest &&
-                        <div className={styles.btnContainer}>
-                            <button>Reject</button>
-                            <button>Accept</button>
-                        </div>
-                }
-            </div>
             
-        </div>
+            </div>
+        </Link>
     )
 }

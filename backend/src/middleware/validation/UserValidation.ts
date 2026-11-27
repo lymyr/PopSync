@@ -1,4 +1,4 @@
-import { body } from "express-validator"
+import { body, param } from "express-validator"
 import { prisma } from "../../lib/prisma.ts"
 import Validation from "./Validation.ts"
 
@@ -31,6 +31,8 @@ export class UserValidation extends Validation {
                 return true
             return false
         }).withMessage("passwords do not match")
+
+    static userId = () => param("userId").isInt().withMessage("userId must be an integer").toInt()
 
     static register = [
         this.username()

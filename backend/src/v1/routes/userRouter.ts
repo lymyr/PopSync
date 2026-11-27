@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createGuest, deleteAccount, getUsers, login, logout, register } from "../controllers/userController.ts";
+import { createGuest, deleteAccount, getUserDetails, getUsers, login, logout, register } from "../controllers/userController.ts";
 import { UserValidation } from "../../middleware/validation/UserValidation.ts";
 import { throwerHelper } from "../../middleware/validation/Validation.ts";
 import SearchQueryValidation from "../../middleware/validation/SearchQueryValidation.ts";
@@ -31,6 +31,12 @@ userRouter.get("/",
     SearchQueryValidation.searchUser,
     throwerHelper<{}, {}, {}, SearchQuery>,
     getUsers
+)
+
+userRouter.get("/:userId",
+    UserValidation.userId(),
+    throwerHelper,
+    getUserDetails
 )
 
 userRouter.delete("/",

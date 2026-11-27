@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs"
 import type { Register } from "../../middleware/validation/UserValidation.ts"
 import type { SearchQuery } from "../../middleware/validation/SearchQueryValidation.ts"
 import { matchedData } from "express-validator"
-import type { Prisma } from "../../../generated/prisma/client.ts"
+import type { Connection, Prisma, User } from "../../../generated/prisma/client.ts"
 import deleteAccountService from "../../services/users/deleteAccount.ts"
 import getGravatar from "../../utils/getGravatar.ts"
 
@@ -50,6 +50,39 @@ export async function getUsers(req: Request<{}, {}, {}, SearchQuery>, res: Respo
     res.json({
         data: users
     })
+}
+
+interface UserDetails extends Omit<User, "password" | "dateCreated"> {
+    connection: Connection
+}
+export async function getUserDetails(req: Request<{userId: number}>, res:Response) {
+    const data = await prisma.$queryRaw<UserDetails[]>`
+        SELECT 
+            u.id,
+            u.username,
+            u.pfp_path AS "pfpPath",
+            u.description,
+            u.is_guest AS "isGuest",
+            CASE 
+                WHEN c.sender_id IS NOT NULL THEN
+                    JSONB_BUILD_OBJECT(
+                        'senderId', c.sender_id,
+                        'receiverId', c.receiver_id,
+                        'status', c.status,
+                        'dateAdded', c.date_added,
+                        'dateUpdated', c.date_updated
+                    ) 
+                ELSE null
+            END AS connection
+
+        FROM "user" AS u
+        LEFT JOIN connection AS c ON 
+            (c.sender_id = ${req.params.userId} AND c.receiver_id = ${req.user?.id}) OR
+            (c.sender_id = ${req.user?.id} AND c.receiver_id = ${req.params.userId})
+        WHERE u.id = ${req.params.userId}
+        GROUP BY u.id, c.sender_id, c.receiver_id
+    `
+    res.json({ data: data[0] })
 }
 
 export async function register(req:Request<{}, {}, Register>, res:Response) {

@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test, afterEach, beforeEach } from "vitest";
 import { prisma } from "../../../lib/prisma.ts";
-import type { ConnectionStatus } from "../../../../generated/prisma/client.ts";
+import type { ConnectionStatus, Connection } from "../../../../generated/prisma/client.ts";
 import type { TestUser } from "../../utils/userGeneration.ts";
 import { testUserGen, randomUserGen } from "../../utils/userGeneration.ts";
 import generateMockId from "../../utils/generateMockId.ts";
@@ -124,12 +124,39 @@ describe("updating/accepting connections", () => {
 
 describe("read and delete connections", () => {
     beforeEach(async () => {
-        const tasks = []
-        for (let i = 0; i < randomUsers.length; i++) {
-            tasks.push(handleConnection(user1, randomUsers[i]?.id, "add"))
-        }
-        await Promise.all([...tasks, handleConnection(user1, user2, "add")])
-        await handleConnection(user2, user1, "accept")
+        if (randomUsers.length < 3)
+            throw new Error("expected at least 3 randomUsers")
+        await prisma.connection.createMany({
+            data: [
+                    ...randomUsers.map((ru, i) => {
+                        if (i == 0) // user1 sent a request to randomUser[0]
+                            return {
+                                senderId: user1.details.id,
+                                receiverId: ru.id
+                            } as Connection
+                        return { // otherwise, randomUsers sent a request to user1
+                            senderId: ru.id,
+                            receiverId: user1.details.id
+                        } as Connection
+                }),
+                {
+                    senderId: user1.details.id,
+                    receiverId: user2.details.id,
+                    status: "accepted"
+                }
+            ]
+        })
+    })
+
+    afterEach(async () => {
+        await prisma.connection.deleteMany()
+    })
+
+    // should be good enuf. no pagination for now
+    test.only("retrieve all pending connection requests", async () => {
+        const res = await user1.agent.get("/v1/connections/pending")
+        expect(res.status).toBe(200)
+        expect(res.body.data).toHaveLength(randomUsers.length - 1)
     })
 
     test("returns all accepted connections", async () => {

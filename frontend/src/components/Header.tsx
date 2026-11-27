@@ -5,7 +5,7 @@ import { useContext, useState } from "react";
 import removeNullType from "../utils/removeNullType";
 import UserContext from "../contexts/UserContext";
 
-interface searchData {
+export interface SearchData {
     search: string;
     filter: "series" | "movies" | "users";
 }
@@ -18,7 +18,7 @@ export default function Header() {
 
     const initialSelect = param.filter == "series" || param.filter == "movies" || param.filter == "users" ? 
         param.filter : "series"
-    const [searchData, setSearchData] = useState<searchData>({
+    const [searchData, setSearchData] = useState<SearchData>({
         filter: initialSelect,
         search: `${(new URLSearchParams(loc.search)).get("query") || ""}`
     })
@@ -111,7 +111,7 @@ export default function Header() {
                                 `${styles.selected} ${styles.profile}` : 
                                 styles.profile
                         }>
-                            <Link to="/profile">
+                            <Link to={`/profile/${user?.id}`}>
                                 <div>
                                     <img aria-label="Profile" src={user?.pfpPath} alt="Profile" className="profile"/>
                                     <div className={styles.navLabel}>Profile</div>

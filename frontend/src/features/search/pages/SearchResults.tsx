@@ -1,63 +1,96 @@
 import { useLocation, useParams } from "react-router";
 import HeaderSection from "../../../components/HeaderSection";
 import PageContainer from "../../../components/PageContainer";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import type { TmdbSearchResult } from "../components/TmdbResults";
+import TmdbResults from "../components/TmdbResults";
+import SectionText from "../../../components/SectionText";
+import type { SearchData } from "../../../components/Header";
+import UserResults, { type UserSearchResult } from "../components/UserResults";
 
-export type SearchResult = 
-    {
-        id: number;
-        title: string;
-        original_title: string;
-        release_date: string;
-        poster_path: string;
-    } |
-    {
-        id: number;
-        name: string;
-        original_name: string;
-        poster_path: string;
-    }
-
-export type State = {
-    data: unknown[];
+export interface State {
     loading: boolean;
     error: string | null;
 }
 
+export type SearchState = {
+    results: TmdbSearchResult[] | UserSearchResult[];
+    canFetch: boolean;
+    page: number;
+    lastUserId: number | null;
+}
+
 export default function SearchResults() {
     const param = useParams()
-    const filter = param.filter
-    const headerText = filter?.split("").map((c, i) => {
+    const typedFilter = param.filter as unknown as SearchData["filter"]
+    const loc = useLocation()
+    const searchQ = new URLSearchParams(loc.search).get("query")
+    if (typeof searchQ != "string")
+        throw new Error("search query is undefined")
+    
+    const headerText = typedFilter.split("").map((c, i) => {
         if (i == 0)
             return c.toUpperCase()
         return c
     }).join("")
 
-    const loc = useLocation()
-    const query = new URLSearchParams(loc.search).get("query")
-    const [page, setPage] = useState(1)
-    const [results, setResults] = useState<unknown[]>([])
-
-    const [state, setState] = useState<State>({
-        data: [],
-        loading: false,
-        error: null
+    const [searchState, setSearchState] = useState<SearchState>({
+        results: [],
+        canFetch: true,
+        lastUserId: null,
+        page: 1
     })
+
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
+
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setLoading(true)
+        setSearchState({
+            results: [],
+            canFetch: true,
+            lastUserId: null,
+            page: 1
+        })
+    }, [loc.search, param.filter, typedFilter])
 
     return (
         <PageContainer pageTitle="Search Page">
-            <HeaderSection title={`${headerText || ""} Results`}>
+            <HeaderSection title={`${headerText} Results`}>
                 {
-                    // param.filter == "series" || param.filter == "movies" ?
-                    //     <TmdbResults 
-                    //         searchQ={query}
-                    //         page={page}
-                    //         type={param.filter}
-                    //         results={results}
-                    //         setResults={setResults}
-                    //     />
-                    //     :
-                        <p>none</p>
+                    typedFilter != "users" ?
+                        <TmdbResults
+                            searchState={searchState}
+                            setSearchState={setSearchState}
+                            filter={typedFilter}
+                            searchQ={searchQ}
+                            setLoading={setLoading}
+                            setError={setError}
+                        />
+                        :
+                        <UserResults 
+                            searchState={searchState}
+                            setSearchState={setSearchState}
+                            searchQ={searchQ}
+                            setLoading={setLoading}
+                            setError={setError}
+                        />
+                }
+                {
+                    error ? 
+                        <SectionText text={error}/> :
+                    loading ? 
+                        <SectionText text={"Loading..."}/> :
+                    searchState.canFetch && 
+                        <button onClick={() => {
+                            if (typedFilter != "users")
+                                setSearchState({...searchState, page: searchState.page+1})
+                            else
+                                setSearchState({...searchState, lastUserId: searchState.results[searchState.results.length-1].id})
+                        }}>
+                            Load more results
+                        </button>
                 }
             </HeaderSection>
         </PageContainer>

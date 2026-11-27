@@ -41,6 +41,39 @@ export async function getAcceptedConnections(req: Request<{id: number}>, res: Re
     res.json({ data: connections })
 }
 
+export async function getConnectionRequests(req: Request, res: Response) {
+    const data = await prisma.connection.findMany({
+        where: {
+            AND: [
+                {receiverId: req.user?.id as number},
+                {status: "pending"}
+            ]
+        },
+        select: {
+            dateAdded: true,
+            dateUpdated: true,
+            status: true,
+            receiver: {
+                select: {
+                    id: true,
+                    username: true,
+                    pfpPath: true
+                }
+            },
+            sender: {
+                select: {
+                    id: true,
+                    username: true,
+                    pfpPath: true
+                }
+            }
+        },
+        orderBy: [{dateUpdated: "desc"}, {senderId: "asc"}]
+    })
+
+    res.json({data})
+}
+
 export async function addConnection(req: Request<{id: number}>, res: Response) {
     const actingUserId = req.user?.id as number
     await prisma.connection.create({

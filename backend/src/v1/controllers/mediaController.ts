@@ -5,7 +5,6 @@ import getMediaDetails from "../../services/tmdb/getMediaDetails.ts";
 import searchTmdb from "../../services/tmdb/searchTmdb.ts";
 
 export async function searchResults(req: Request<{}, {}, {}, SearchQuery>, res: Response) {
-    console.log(req.query.query)
     const data = await searchTmdb(req.query.type, req.query.query, req.query.page)
     res.json({ data })
 }

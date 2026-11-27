@@ -1,12 +1,13 @@
-import { describe, test, expect, afterAll, beforeAll, vi, beforeEach } from "vitest";
+import { describe, test, expect, afterAll, beforeAll, vi, beforeEach, afterEach } from "vitest";
 import { prisma } from "../../../lib/prisma.ts";
 import request from "supertest"
 import app from "../../../app.ts";
-import { testUserGen, type TestUser } from "../../utils/userGeneration.ts";
+import { randomUserGen, testUserGen, type TestUser } from "../../utils/userGeneration.ts";
 import generateMockId from "../../utils/generateMockId.ts";
 import tmdb from "../../../lib/tmdb.ts";
 import TmdbMockPayloads from "../../mocks/TmdbMockPayloads.ts";
 import type { Response } from "supertest";
+import type { User } from "../../../../generated/prisma/client.ts";
 
 describe("search users", async () => {
     let loggedUser: TestUser;
@@ -74,6 +75,74 @@ describe("search users", async () => {
             const res = await searchUser("a", id.toString())
             expect(res.status).toBe(404)
         })
+    })
+})
+
+describe("get user details", () => {
+    let currentUser: TestUser
+    let otherUser: User
+    beforeAll(async () => {
+        currentUser = (await testUserGen(1))[0] as TestUser
+        otherUser = (await randomUserGen(1))[0] as User
+    })
+
+    afterAll(async () => {
+        await Promise.all([prisma.user.deleteMany(), prisma.session.deleteMany()])
+    })
+
+    afterEach(async () => {
+        await prisma.connection.deleteMany()
+    })
+
+    test("no connection", async () => {
+        const res = await currentUser.agent.get(`/v1/users/${otherUser.id}`)
+        expect(res.status).toBe(200)
+        expect(res.body.data.id).toBe(otherUser.id)
+        expect(res.body.data.connection).toBeFalsy()
+    })
+
+    test("pending connection", async () => {
+        await prisma.connection.create({
+            data: {
+                senderId: currentUser.details.id,
+                receiverId: otherUser.id
+            }
+        })
+        const res = await currentUser.agent.get(`/v1/users/${otherUser.id}`)
+        expect(res.status).toBe(200)
+        expect(res.body.data.id).toBe(otherUser.id)
+        expect(res.body.data.connection.senderId).toBe(currentUser.details.id)
+        expect(res.body.data.connection.receiverId).toBe(otherUser.id)
+        expect(res.body.data.connection.status).toBe("pending")
+    })
+    test("pending connection as receiver", async () => {
+        await prisma.connection.create({
+            data: {
+                senderId: otherUser.id,
+                receiverId: currentUser.details.id
+            }
+        })
+        const res = await currentUser.agent.get(`/v1/users/${otherUser.id}`)
+        expect(res.status).toBe(200)
+        expect(res.body.data.id).toBe(otherUser.id)
+        expect(res.body.data.connection.senderId).toBe(otherUser.id)
+        expect(res.body.data.connection.receiverId).toBe(currentUser.details.id)
+        expect(res.body.data.connection.status).toBe("pending")
+    })
+    test("accepted connection", async () => {
+        await prisma.connection.create({
+            data: {
+                senderId: otherUser.id,
+                receiverId: currentUser.details.id,
+                status: "accepted"
+            }
+        })
+        const res = await currentUser.agent.get(`/v1/users/${otherUser.id}`)
+        expect(res.status).toBe(200)
+        expect(res.body.data.id).toBe(otherUser.id)
+        expect(res.body.data.connection.senderId).toBe(otherUser.id)
+        expect(res.body.data.connection.receiverId).toBe(currentUser.details.id)
+        expect(res.body.data.connection.status).toBe("accepted")
     })
 })
 
