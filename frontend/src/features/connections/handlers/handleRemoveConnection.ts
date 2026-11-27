@@ -1,29 +1,41 @@
 import type { User } from "../../auth/contexts/UserContext"
 import authFetch from "../../auth/utils/authFetch"
-import type { ButtonState, ProfileState } from "../../../pages/profile/components/ProfileInfo"
+import type { OriginProps } from "../../../types/connection/OriginProps"
+import type { LoadingErrorState } from "../../../types/LoadingErrorState"
 
-export default async function handleCancelRequest(
+export default async function handleRemoveConnection(
     setUser: React.Dispatch<React.SetStateAction<User | null>>,
-    profileState: ProfileState,
-    setProfileState: React.Dispatch<React.SetStateAction<ProfileState>>,
-    setButtonState: React.Dispatch<React.SetStateAction<ButtonState>>
+    setButtonState: React.Dispatch<React.SetStateAction<LoadingErrorState>>,
+    origin: OriginProps
 ) {
-    if (profileState.data === null)
-        throw new Error("profileState data is null")
     try {
         setButtonState({
             loading: true,
             error: null
         })
-        const res = await authFetch(`/v1/connections/${profileState.data?.id}`, setUser, {method: "delete"})
-        if (res.ok) {
-            setProfileState({
-                ...profileState,
+        const res = await authFetch(
+            origin.from == "profile" ?
+                `/v1/connections/${origin.profileState.data?.id}` :
+                `/v1/connections/${origin.userId}`, 
+            setUser, 
+            {method: "delete"}
+        )
+        if (res.ok && origin.from == "profile") {
+            if (origin.profileState.data === null)
+                throw new Error("profileState data is null")
+            origin.setProfileState({
+                ...origin.profileState,
                 data: {
-                    ...profileState.data,
+                    ...origin.profileState.data,
                     connection: null
                 }
             })
+        }
+        else if (res.ok && origin.from == "connections") {
+            origin.setConnections(origin.connections.filter(u => u.sender.id != origin.userId))
+        }
+
+        if (res.ok) {
             setButtonState({
                 loading: false,
                 error: null

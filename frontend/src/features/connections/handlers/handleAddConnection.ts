@@ -1,42 +1,49 @@
 import type { User } from "../../auth/contexts/UserContext";
 import authFetch from "../../auth/utils/authFetch";
-import type { ButtonState, ProfileState } from "../../../pages/profile/components/ProfileInfo";
+import type { OriginProps } from "../../../types/connection/OriginProps";
+import type { LoadingErrorState } from "../../../types/LoadingErrorState";
 
 export default async function handleAddConnection(
-    user: User | null,
     setUser: React.Dispatch<React.SetStateAction<User | null>>,
-    profileState: ProfileState,
-    setProfileState: React.Dispatch<React.SetStateAction<ProfileState>>,
-    setButtonState: React.Dispatch<React.SetStateAction<ButtonState>>
+    setButtonState: React.Dispatch<React.SetStateAction<LoadingErrorState>>,
+    origin: OriginProps
 ) {
-    if (profileState.data === null)
-        throw new Error("profileState data is null")
-    if (user == null)
-        throw new Error("user is null")
     try {
         setButtonState({
             loading: true,
             error: null
         })
-        const res = await authFetch(`/v1/connections/${profileState.data?.id}`, setUser, {method: "post"})
-        if (res.status == 201) {
-            setProfileState({
-                ...profileState,
-                data: {
-                    ...profileState.data,
-                    connection: {
-                        senderId: user.id,
-                        receiverId: profileState.data.id,
-                        status: "pending",
-                        dateAdded: new Date(),
-                        dateUpdated: new Date()
+        const res = await authFetch(
+            origin.from == "profile" ?
+                `/v1/connections/${origin.profileState.data?.id}` :
+                `/v1/connections/${origin.userId}`, 
+            setUser, 
+            {method: "post"}
+        )
+        if (origin.from == "profile") {
+            if (origin.profileState.data === null)
+                throw new Error("profileState data is null")
+            if (origin.user == null)
+                throw new Error("user is null")
+            if (res.status == 201) {
+                origin.setProfileState({
+                    ...origin.profileState,
+                    data: {
+                        ...origin.profileState.data,
+                        connection: {
+                            senderId: origin.user.id,
+                            receiverId: origin.profileState.data.id,
+                            status: "pending",
+                            dateAdded: new Date(),
+                            dateUpdated: new Date()
+                        }
                     }
-                }
-            })
-            setButtonState({
-                loading: false,
-                error: null
-            })
+                })
+                setButtonState({
+                    loading: false,
+                    error: null
+                })
+            }
         }
         else {
             if (res.headers.get("content-type")?.includes("application/json")) {

@@ -1,9 +1,26 @@
 .container {
-    padding: 24px 4px;
+    padding: 16px 4px;
 
     display: flex;
     align-items: center;
     gap: 12px;
+
+    position: relative;
+
+    /* transition: 150ms background-color ease-in;
+    border-radius: var(--radius); */
+}
+
+/* .container:has(.profileLink:hover) {
+    background-color: var(--main-color-dark);
+} */
+
+.profileLink {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    isolation: isolate;
+    z-index: 1;
 }
 
 .container > div {
@@ -33,15 +50,18 @@
 
 .btnContainer {
     display: flex;
-
+    width: fit-content;
     gap: 8px;
     justify-content: start;
     height: fit-content;
+
+    isolation: isolate;
+    z-index: 2;
 }
 
 .btnContainer button {
     width: 100%;
-    padding: 4px 12px;
+    padding: 4px 44px;
     max-width: 240px;
 }
 

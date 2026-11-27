@@ -8,6 +8,7 @@ import SectionText from "../../../components/SectionText"
 import handleAddConnection from "../../../features/connections/handlers/handleAddConnection"
 import handleRemoveConnection from "../../../features/connections/handlers/handleRemoveConnection"
 import handleAcceptRequest from "../../../features/connections/handlers/handleAcceptRequest"
+import type { LoadingErrorState } from "../../../types/LoadingErrorState"
 
 interface Profile {
     id: number;
@@ -32,11 +33,6 @@ export interface ProfileState {
     error: null | string;
 }
 
-export interface ButtonState {
-    loading: boolean;
-    error: null | string;
-}
-
 export default function ProfileInfo({userId} : {userId: number | string}) {
     const {user, setUser} = removeNullType(useContext(UserContext))
 
@@ -46,12 +42,11 @@ export default function ProfileInfo({userId} : {userId: number | string}) {
         error: null
     })
 
-    const [buttonState, setButtonState] = useState<ButtonState>({
+    const [buttonState, setButtonState] = useState<LoadingErrorState>({
         loading: false,
         error: null
     })
-    // console.log("PROFILE STATE DATA:")
-    // console.log(profileState.data)
+
     const isUser = user?.id === profileState.data?.id
     const hasSentReq = 
         profileState.data?.connection?.status == "pending" && 
@@ -128,9 +123,12 @@ export default function ProfileInfo({userId} : {userId: number | string}) {
                                         <button
                                             onClick={() => handleRemoveConnection(
                                                 setUser,
-                                                profileState,
-                                                setProfileState,
-                                                setButtonState
+                                                setButtonState, 
+                                                {
+                                                    from: "profile",
+                                                    profileState,
+                                                    setProfileState,
+                                                }
                                             )}
                                             disabled={buttonState.loading}
                                         >
@@ -141,9 +139,12 @@ export default function ProfileInfo({userId} : {userId: number | string}) {
                                             <button
                                                 onClick={() => handleRemoveConnection(
                                                     setUser,
-                                                    profileState,
-                                                    setProfileState,
-                                                    setButtonState
+                                                    setButtonState, 
+                                                    {
+                                                        from: "profile",
+                                                        profileState,
+                                                        setProfileState,
+                                                    }
                                                 )}
                                                 disabled={buttonState.loading}
                                             >
@@ -152,9 +153,12 @@ export default function ProfileInfo({userId} : {userId: number | string}) {
                                             <button 
                                                 onClick={() => handleAcceptRequest(
                                                     setUser,
-                                                    profileState,
-                                                    setProfileState,
-                                                    setButtonState
+                                                    setButtonState,
+                                                    {
+                                                        from: "profile",
+                                                        profileState,
+                                                        setProfileState,
+                                                    }
                                                 )}
                                                 className={styles.colored}
                                                 disabled={buttonState.loading}
@@ -166,9 +170,12 @@ export default function ProfileInfo({userId} : {userId: number | string}) {
                                         <button
                                             onClick={() => handleRemoveConnection(
                                                 setUser,
-                                                profileState,
-                                                setProfileState,
-                                                setButtonState
+                                                setButtonState, 
+                                                {
+                                                    from: "profile",
+                                                    profileState,
+                                                    setProfileState,
+                                                }
                                             )}
                                             disabled={buttonState.loading}
                                         >
@@ -178,11 +185,14 @@ export default function ProfileInfo({userId} : {userId: number | string}) {
                                         <button 
                                             className={styles.colored}
                                             onClick={() => handleAddConnection(
-                                                user,
                                                 setUser, 
-                                                profileState, 
-                                                setProfileState,
-                                                setButtonState
+                                                setButtonState,
+                                                {  
+                                                    from: "profile",
+                                                    user,
+                                                    profileState, 
+                                                    setProfileState,
+                                                }
                                             )}
                                             disabled={buttonState.loading}
                                         >

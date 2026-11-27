@@ -107,7 +107,7 @@ export default function Header() {
                             </Link>
                         </li>
                         <li className={
-                            path == 'profile' ? 
+                            path == 'profile' && param.id == user?.id ? 
                                 `${styles.selected} ${styles.profile}` : 
                                 styles.profile
                         }>

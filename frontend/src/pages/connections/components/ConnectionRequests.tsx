@@ -1,11 +1,11 @@
-import { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import authFetch from "../../../features/auth/utils/authFetch";
 import removeNullType from "../../../features/auth/utils/removeNullType";
 import UserContext from "../../../features/auth/contexts/UserContext";
 import HeaderSection from "../../../components/HeaderSection";
-import type { Connection } from "../Connection";
 import SectionText from "../../../components/SectionText";
 import ConnectionCard from "./ConnectionCard";
+import type { AcceptedConnection, PendingConnection } from "../../../types/connection/Connection";
 
 interface ConState {
     loading: boolean;
@@ -13,11 +13,18 @@ interface ConState {
 }
 
 interface Props {
-    connections: Connection[]
-    setConnections: React.Dispatch<React.SetStateAction<Connection[]>>
+    connections: PendingConnection[]
+    setConnections: React.Dispatch<React.SetStateAction<PendingConnection[]>>
+    setAcceptedConnections: React.Dispatch<React.SetStateAction<AcceptedConnection[]>>
+    acceptedConnections: AcceptedConnection[]
 }
 
-export default function ConnectionRequests({connections, setConnections}: Props) {
+export default function ConnectionRequests({
+    connections, 
+    setConnections, 
+    setAcceptedConnections,
+    acceptedConnections
+}: Props) {
     const [conState, setConState] = useState<ConState>({
         loading: false,
         error: null
@@ -32,7 +39,7 @@ export default function ConnectionRequests({connections, setConnections}: Props)
                 setConState({loading: true, error: null})
                 const res = await authFetch("/v1/connections/pending", setUser)
                 if (res.ok) {
-                    const json = await res.json() as {data: Connection[]}
+                    const json = await res.json() as {data: PendingConnection[]}
                     setConnections([...connections, ...json.data])
                 }
                 else {
@@ -61,17 +68,27 @@ export default function ConnectionRequests({connections, setConnections}: Props)
                     <SectionText text={conState.error}/> :
                 conState.loading ?
                     <SectionText text="Loading..." /> :
+                connections.length > 0 ?
                 <ul className="list-reset">
                     {
                         connections
                             .filter(c => c.status == "pending")
                             .map(c => 
-                                <li>
-                                    <ConnectionCard userDetails={c.sender} isRequest={true}/>
+                                <li key={`${c.sender.id}-${c.receiver.id}`}>
+                                    <ConnectionCard 
+                                        userDetails={c.sender} 
+                                        meta={{
+                                            connections, 
+                                            setConnections,
+                                            acceptedConnections,
+                                            setAcceptedConnections
+                                        }}
+                                    />
                                 </li>
                             )
                     }
-                </ul>
+                </ul> :
+                <SectionText text="No connection request found."/>
                 
             }
         </HeaderSection>
